@@ -139,18 +139,40 @@
 </div>
 
 <script>
-    // BUSCA QUALQUER DADO ANTERIOR DA MEMÓRIA DO SEU CELULAR PARA NÃO PERDER NADA!
-    var chaveMemoria = 'db_v37';
-    if (!localStorage.getItem('db_v37') && localStorage.getItem('db_v36')) chaveMemoria = 'db_v36';
-    if (!localStorage.getItem(chaveMemoria) && localStorage.getItem('db_v35')) chaveMemoria = 'db_v35';
-    if (!localStorage.getItem(chaveMemoria) && localStorage.getItem('db_v38')) chaveMemoria = 'db_v38';
-    if (!localStorage.getItem(chaveMemoria) && localStorage.getItem('meu_trabalho_db')) chaveMemoria = 'meu_trabalho_db';
+    // SISTEMA UNIVERSAL DE RECUPERAÇÃO DE DADOS
+    function carregarBanco() {
+        var baseEstrutura = { 
+            horas: [], reparos: [], assist: [], aulas: [], diaria: [],
+            hist_horas: [], hist_reparos: [], hist_assist: [], hist_aulas: [], hist_diaria: []
+        };
 
-    var db = JSON.parse(localStorage.getItem(chaveMemoria)) || { 
-        horas: [], reparos: [], assist: [], aulas: [], diaria: [],
-        hist_horas: [], hist_reparos: [], hist_assist: [], hist_aulas: [], hist_diaria: []
-    };
-    
+        // Procura por todas as variações de chaves salvas anteriormente
+        var chaves = Object.keys(localStorage);
+        for (var i = 0; i < chaves.length; i++) {
+            var chave = chaves[i];
+            if (chave.startsWith('db_') || chave === 'meu_trabalho_db') {
+                try {
+                    var dados = JSON.parse(localStorage.getItem(chave));
+                    if (dados && typeof dados === 'object') {
+                        ['horas', 'reparos', 'assist', 'aulas', 'diaria'].forEach(function(aba) {
+                            if (Array.isArray(dados[aba]) && dados[aba].length > 0) {
+                                baseEstrutura[aba] = baseEstrutura[aba].concat(dados[aba]);
+                            }
+                            if (Array.isArray(dados['hist_' + aba]) && dados['hist_' + aba].length > 0) {
+                                baseEstrutura['hist_' + aba] = baseEstrutura['hist_' + aba].concat(dados['hist_' + aba]);
+                            }
+                        });
+                    }
+                } catch(e) {}
+            }
+        }
+        return baseEstrutura;
+    }
+
+    var db = carregarBanco();
+    const chaveUnica = 'db_v_master';
+    localStorage.setItem(chaveUnica, JSON.stringify(db));
+
     const abas = ['horas', 'reparos', 'assist', 'aulas', 'diaria'];
     var secaoAtual = 'horas';
     var listaServicosAdicionados = [];
@@ -284,7 +306,7 @@
         }
 
         db[secaoAtual].push(item);
-        localStorage.setItem(chaveMemoria, JSON.stringify(db));
+        localStorage.setItem(chaveUnica, JSON.stringify(db));
         listaServicosAdicionados = [];
         desenhar();
     }
@@ -306,7 +328,7 @@
         if(db[secaoAtual]) {
             db[secaoAtual].forEach((x, i) => {
                 totalMeu += x.valorMeu;
-                if(secaoAtual === 'reparos') { tBru += x.bruto; tGas += x.gasto; }
+                if(secaoAtual === 'reparos') { tBru += (x.bruto || 0); tGas += (x.gasto || 0); }
 
                 let infoHtml = '';
                 if (secaoAtual === 'reparos') {
@@ -318,7 +340,7 @@
                         </div>
                         <div class="valor-item">
                             <div>R$ ${x.valorMeu.toFixed(2)}</div>
-                            <span class="sub-valor">(Bruto: R$ ${x.bruto.toFixed(2)})</span>
+                            <span class="sub-valor">(Bruto: R$ ${(x.bruto || 0).toFixed(2)})</span>
                             <div onclick="apagar(${i})" style="color:#cbd5e1; font-size:16px; margin-top:4px; cursor:pointer;">🗑</div>
                         </div>
                     `;
@@ -423,7 +445,7 @@
                     return `<div class="item-antigo">
                         <div><b>📅 ${txtData} - 👤 ${it.cliente}</b></div>
                         <div style="color:#64748b;">🛠️ ${it.ser}</div>
-                        <div style="color:var(--accent); font-weight:bold;">Seu Saldo: R$ ${it.valorMeu.toFixed(2)} <span style="font-size:10px; color:#94a3b8;">(Bruto: R$ ${it.bruto.toFixed(2)})</span></div>
+                        <div style="color:var(--accent); font-weight:bold;">Seu Saldo: R$ ${it.valorMeu.toFixed(2)} <span style="font-size:10px; color:#94a3b8;">(Bruto: R$ ${(it.bruto||0).toFixed(2)})</span></div>
                     </div>`;
                 }
                 return `<div class="item-antigo">
@@ -446,7 +468,7 @@
     function apagarMesHist(idx) {
         if(confirm('Tem certeza que deseja APAGAR este mês do histórico?')) {
             db['hist_'+secaoAtual].splice(idx, 1);
-            localStorage.setItem(chaveMemoria, JSON.stringify(db));
+            localStorage.setItem(chaveUnica, JSON.stringify(db));
             desenhar();
         }
     }
@@ -454,7 +476,7 @@
     function toggleHist() { let l = document.getElementById('hist-lista'); l.style.display = l.style.display==='block' ? 'none' : 'block'; }
     function toggleMesDet(idx) { let d = document.getElementById('det-mes-'+idx); d.style.display = d.style.display==='block' ? 'none' : 'block'; }
     function abrirForm() { let f = document.getElementById('meu-form'); f.style.display = f.style.display==='block' ? 'none' : 'block'; }
-    function apagar(i) { if(confirm('Excluir este registro?')) { db[secaoAtual].splice(i,1); localStorage.setItem(chaveMemoria, JSON.stringify(db)); desenhar(); } }
+    function apagar(i) { if(confirm('Excluir este registro?')) { db[secaoAtual].splice(i,1); localStorage.setItem(chaveUnica, JSON.stringify(db)); desenhar(); } }
     
     function abrirMeses() {
         let g = document.getElementById('meses-grid');
@@ -469,7 +491,7 @@
         if(!db['hist_'+secaoAtual]) db['hist_'+secaoAtual] = [];
         db['hist_'+secaoAtual].push({ mes: m, total: s, itens: [...db[secaoAtual]] });
         db[secaoAtual] = [];
-        localStorage.setItem(chaveMemoria, JSON.stringify(db));
+        localStorage.setItem(chaveUnica, JSON.stringify(db));
         document.getElementById('modal-meses').style.display = 'none';
         desenhar();
     }
