@@ -49,14 +49,32 @@
             text-transform: uppercase;
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .header-titulo {
+            display: flex;
+            align-items: center;
             gap: 10px;
+            margin: auto;
         }
         
         header img {
             width: 26px;
             height: 26px;
             object-fit: contain;
+        }
+
+        .btn-config {
+            position: absolute;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: var(--secondary);
+            padding: 4px;
         }
         
         nav { display: flex; background: white; overflow-x: auto; position: sticky; top: 0; z-index: 100; padding: 5px; gap: 5px; border-bottom: 1px solid #e2e8f0; scrollbar-width: none; }
@@ -104,20 +122,26 @@
         
         .tag-servico { background: #f1f5f9; padding: 8px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; display: flex; justify-content: space-between; margin-bottom: 6px; }
 
-        #modal-meses, #comprovante { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.8); z-index:2000; justify-content:center; align-items:center; backdrop-filter: blur(4px); }
+        #modal-meses, #comprovante, #modal-config { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.8); z-index:2000; justify-content:center; align-items:center; backdrop-filter: blur(4px); }
         .lista-meses { background:white; width:85%; border-radius:24px; padding:20px; display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
         
         .bt-share { position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.15); border: none; color: white; padding: 8px 12px; border-radius: 10px; font-size: 14px; cursor: pointer; }
 
-        .backup-area { margin-top: 25px; background: #e2e8f0; padding: 15px; border-radius: 16px; text-align: center; }
-        .backup-area button { background: var(--primary); color: white; border: none; padding: 10px 14px; border-radius: 8px; font-size: 11px; font-weight: bold; margin: 5px; cursor: pointer; }
+        /* Estilo elegante para o Modal de Configurações */
+        .card-config { background: white; width: 85%; max-width: 360px; border-radius: 24px; padding: 25px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .card-config h3 { margin-top: 0; font-size: 16px; color: var(--primary); }
+        .card-config p { font-size: 12px; color: var(--secondary); margin-bottom: 20px; line-height: 1.4; }
+        .btn-modal-op { width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; font-size: 12px; border: none; margin-bottom: 10px; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <header>
-    <img src="Icon.png.png" alt="Kitesurf Icon">
-    <span>Meu Trabalho</span>
+    <div class="header-titulo">
+        <img src="Icon.png.png" alt="Kitesurf Icon">
+        <span>Meu Trabalho</span>
+    </div>
+    <button class="btn-config" onclick="abrirConfig()" title="Configurações e Backup">⚙️</button>
 </header>
 
 <nav id="menu">
@@ -130,31 +154,44 @@
 
 <div class="container" id="conteudo"></div>
 
+<!-- Modal de Meses -->
 <div id="modal-meses"><div class="lista-meses" id="meses-grid"></div></div>
+
+<!-- Modal de Relatório -->
 <div id="comprovante" style="background:white; flex-direction:column; display:none;">
     <div id="conteudo-comprovante" style="padding:30px; flex-grow:1; overflow-y:auto;"></div>
     <button id="btn-wpp" style="background:#22c55e; color:white; border:none; padding:20px; font-weight:bold;">ENVIAR WHATSAPP</button>
     <button onclick="this.parentElement.style.display='none'" style="background:#eee; border:none; padding:15px;">FECHAR</button>
 </div>
 
+<!-- Modal Elegante de Backup / Configurações -->
+<div id="modal-config">
+    <div class="card-config animar">
+        <h3>💾 Segurança dos Dados</h3>
+        <p>Gere uma cópia de segurança dos seus registros ou restaure um arquivo salvo anteriormente.</p>
+        
+        <button class="btn-modal-op" style="background:var(--primary); color:white;" onclick="exportarBackup()">BAIXAR BACKUP</button>
+        <button class="btn-modal-op" style="background:#e2e8f0; color:#334155;" onclick="document.getElementById('input-importar').click()">RESTAURAR BACKUP</button>
+        <input type="file" id="input-importar" style="display:none;" onchange="importarBackup(event)">
+        
+        <button class="btn-modal-op" style="background:transparent; color:var(--danger); margin-bottom:0; margin-top:5px;" onclick="fecharConfig()">Fechar</button>
+    </div>
+</div>
+
 <script>
-    // CHAVE FIXA E PERMANENTE PARA O BANCO DE DADOS
     const CHAVE_UNICA = 'meu_app_kitesurf_v1';
 
-    // FUNÇÃO QUE RECUPERA DADOS ANTIGOS DE QUALQUER CHAVE ANTERIOR SE EXISTIREM
     function carregarBancoSeguro() {
         var base = { 
             horas: [], reparos: [], assist: [], aulas: [], diaria: [],
             hist_horas: [], hist_reparos: [], hist_assist: [], hist_aulas: [], hist_diaria: []
         };
 
-        // 1. Tenta carregar a chave oficial
         var salvo = localStorage.getItem(CHAVE_UNICA);
         if (salvo) {
             try { return JSON.parse(salvo); } catch(e){}
         }
 
-        // 2. Se não achou, faz uma varredura procurando por restos de dados anteriores
         for (var i = 0; i < localStorage.length; i++) {
             var k = localStorage.key(i);
             try {
@@ -210,7 +247,10 @@
     document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, false);
     document.addEventListener('touchend', e => {
         touchEndX = e.changedTouches[0].screenX;
-        if (document.getElementById('modal-meses').style.display !== 'flex' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'SELECT') handleGesture();
+        if (document.getElementById('modal-meses').style.display !== 'flex' && 
+            document.getElementById('modal-config').style.display !== 'flex' && 
+            document.activeElement.tagName !== 'INPUT' && 
+            document.activeElement.tagName !== 'SELECT') handleGesture();
     }, false);
 
     function formatarDataBR(d) { return d ? d.split("-").reverse().join("/") : ""; }
@@ -392,13 +432,6 @@
             </div>
             <div id="meu-form" class="caixa-form animar">${renderFormHtml()}</div>
             ${listaHtml}
-            
-            <div class="backup-area">
-                <span style="font-size:11px; font-weight:bold; color:#475569; display:block; margin-bottom:6px;">💾 SEGURANÇA DOS SEUS DADOS</span>
-                <button onclick="exportarBackup()">BAIXAR BACKUP</button>
-                <button onclick="document.getElementById('input-importar').click()">RESTAURAR BACKUP</button>
-                <input type="file" id="input-importar" style="display:none;" onchange="importarBackup(event)">
-            </div>
         `;
     }
 
@@ -519,7 +552,10 @@
         document.getElementById('comprovante').style.display='flex';
     }
 
-    // --- FUNÇÕES DE BACKUP SALVA-VIDAS ---
+    // --- MANIPULAÇÃO DO MODAL DE CONFIGURAÇÃO / BACKUP ---
+    function abrirConfig() { document.getElementById('modal-config').style.display = 'flex'; }
+    function fecharConfig() { document.getElementById('modal-config').style.display = 'none'; }
+
     function exportarBackup() {
         var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
         var downloadAnchor = document.createElement('a');
@@ -528,6 +564,7 @@
         document.body.appendChild(downloadAnchor);
         downloadAnchor.click();
         downloadAnchor.remove();
+        fecharConfig();
     }
 
     function importarBackup(event) {
@@ -539,6 +576,7 @@
                     db = importado;
                     localStorage.setItem(CHAVE_UNICA, JSON.stringify(db));
                     desenhar();
+                    fecharConfig();
                     alert("Backup restaurado com sucesso!");
                 }
             } catch(err) {
