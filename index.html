@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Meu Trabalho - Kitesurf</title>
 
-    <!-- Ícone na aba do navegador e na tela inicial do celular -->
     <link rel="icon" type="image/png" href="Icon.png.png">
     <link rel="apple-touch-icon" href="Icon.png.png">
 
@@ -109,6 +108,9 @@
         .lista-meses { background:white; width:85%; border-radius:24px; padding:20px; display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
         
         .bt-share { position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.15); border: none; color: white; padding: 8px 12px; border-radius: 10px; font-size: 14px; cursor: pointer; }
+
+        .backup-area { margin-top: 25px; background: #e2e8f0; padding: 15px; border-radius: 16px; text-align: center; }
+        .backup-area button { background: var(--primary); color: white; border: none; padding: 10px 14px; border-radius: 8px; font-size: 11px; font-weight: bold; margin: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -136,16 +138,41 @@
 </div>
 
 <script>
-    // MANTEVE A MESMA CHAVE DE MEMÓRIA PADRÃO PARA PRESERVAR TODOS OS SEUS DADOS
-    var CHAVE_DB = 'meu_trabalho_db';
-    if (!localStorage.getItem(CHAVE_DB) && localStorage.getItem('db_v37')) {
-        CHAVE_DB = 'db_v37';
+    // CHAVE FIXA E PERMANENTE PARA O BANCO DE DADOS
+    const CHAVE_UNICA = 'meu_app_kitesurf_v1';
+
+    // FUNÇÃO QUE RECUPERA DADOS ANTIGOS DE QUALQUER CHAVE ANTERIOR SE EXISTIREM
+    function carregarBancoSeguro() {
+        var base = { 
+            horas: [], reparos: [], assist: [], aulas: [], diaria: [],
+            hist_horas: [], hist_reparos: [], hist_assist: [], hist_aulas: [], hist_diaria: []
+        };
+
+        // 1. Tenta carregar a chave oficial
+        var salvo = localStorage.getItem(CHAVE_UNICA);
+        if (salvo) {
+            try { return JSON.parse(salvo); } catch(e){}
+        }
+
+        // 2. Se não achou, faz uma varredura procurando por restos de dados anteriores
+        for (var i = 0; i < localStorage.length; i++) {
+            var k = localStorage.key(i);
+            try {
+                var d = JSON.parse(localStorage.getItem(k));
+                if (d && typeof d === 'object') {
+                    ['horas', 'reparos', 'assist', 'aulas', 'diaria'].forEach(aba => {
+                        if (Array.isArray(d[aba]) && d[aba].length > 0) base[aba] = base[aba].concat(d[aba]);
+                        if (Array.isArray(d['hist_' + aba]) && d['hist_' + aba].length > 0) base['hist_' + aba] = base['hist_' + aba].concat(d['hist_' + aba]);
+                    });
+                }
+            } catch(e){}
+        }
+
+        return base;
     }
 
-    var db = JSON.parse(localStorage.getItem(CHAVE_DB)) || { 
-        horas: [], reparos: [], assist: [], aulas: [], diaria: [],
-        hist_horas: [], hist_reparos: [], hist_assist: [], hist_aulas: [], hist_diaria: []
-    };
+    var db = carregarBancoSeguro();
+    localStorage.setItem(CHAVE_UNICA, JSON.stringify(db));
 
     const abas = ['horas', 'reparos', 'assist', 'aulas', 'diaria'];
     var secaoAtual = 'horas';
@@ -280,7 +307,7 @@
         }
 
         db[secaoAtual].push(item);
-        localStorage.setItem(CHAVE_DB, JSON.stringify(db));
+        localStorage.setItem(CHAVE_UNICA, JSON.stringify(db));
         listaServicosAdicionados = [];
         desenhar();
     }
@@ -364,7 +391,15 @@
                 <button class="bt-acao" style="background:var(--history); color:white; flex:1;" onclick="abrirMeses()">BAIXA</button>
             </div>
             <div id="meu-form" class="caixa-form animar">${renderFormHtml()}</div>
-            ${listaHtml}`;
+            ${listaHtml}
+            
+            <div class="backup-area">
+                <span style="font-size:11px; font-weight:bold; color:#475569; display:block; margin-bottom:6px;">💾 SEGURANÇA DOS SEUS DADOS</span>
+                <button onclick="exportarBackup()">BAIXAR BACKUP</button>
+                <button onclick="document.getElementById('input-importar').click()">RESTAURAR BACKUP</button>
+                <input type="file" id="input-importar" style="display:none;" onchange="importarBackup(event)">
+            </div>
+        `;
     }
 
     function renderFormHtml() {
@@ -442,7 +477,7 @@
     function apagarMesHist(idx) {
         if(confirm('Tem certeza que deseja APAGAR este mês do histórico?')) {
             db['hist_'+secaoAtual].splice(idx, 1);
-            localStorage.setItem(CHAVE_DB, JSON.stringify(db));
+            localStorage.setItem(CHAVE_UNICA, JSON.stringify(db));
             desenhar();
         }
     }
@@ -450,7 +485,7 @@
     function toggleHist() { let l = document.getElementById('hist-lista'); l.style.display = l.style.display==='block' ? 'none' : 'block'; }
     function toggleMesDet(idx) { let d = document.getElementById('det-mes-'+idx); d.style.display = d.style.display==='block' ? 'none' : 'block'; }
     function abrirForm() { let f = document.getElementById('meu-form'); f.style.display = f.style.display==='block' ? 'none' : 'block'; }
-    function apagar(i) { if(confirm('Excluir este registro?')) { db[secaoAtual].splice(i,1); localStorage.setItem(CHAVE_DB, JSON.stringify(db)); desenhar(); } }
+    function apagar(i) { if(confirm('Excluir este registro?')) { db[secaoAtual].splice(i,1); localStorage.setItem(CHAVE_UNICA, JSON.stringify(db)); desenhar(); } }
     
     function abrirMeses() {
         let g = document.getElementById('meses-grid');
@@ -465,7 +500,7 @@
         if(!db['hist_'+secaoAtual]) db['hist_'+secaoAtual] = [];
         db['hist_'+secaoAtual].push({ mes: m, total: s, itens: [...db[secaoAtual]] });
         db[secaoAtual] = [];
-        localStorage.setItem(CHAVE_DB, JSON.stringify(db));
+        localStorage.setItem(CHAVE_UNICA, JSON.stringify(db));
         document.getElementById('modal-meses').style.display = 'none';
         desenhar();
     }
@@ -482,6 +517,35 @@
         document.getElementById('conteudo-comprovante').innerHTML = `<pre style="white-space:pre-wrap; font-family:sans-serif;">${t}</pre>`;
         document.getElementById('btn-wpp').onclick = () => window.location.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(t)}`;
         document.getElementById('comprovante').style.display='flex';
+    }
+
+    // --- FUNÇÕES DE BACKUP SALVA-VIDAS ---
+    function exportarBackup() {
+        var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
+        var downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", "backup_meu_trabalho.json");
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    }
+
+    function importarBackup(event) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                var importado = JSON.parse(e.target.result);
+                if (importado && typeof importado === 'object') {
+                    db = importado;
+                    localStorage.setItem(CHAVE_UNICA, JSON.stringify(db));
+                    desenhar();
+                    alert("Backup restaurado com sucesso!");
+                }
+            } catch(err) {
+                alert("Erro ao ler arquivo de backup.");
+            }
+        };
+        reader.readAsText(event.target.files[0]);
     }
 
     window.onload = () => mudar('horas');
