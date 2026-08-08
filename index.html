@@ -95,15 +95,57 @@
         .bloco span { display: block; font-size: 9px; opacity: 0.5; margin-bottom: 4px; }
         .bloco b { font-size: 13px; color: #cbd5e1; }
 
-        .item { background: var(--card); padding: 16px; border-radius: 16px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-start; border: 1px solid #f1f5f9; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        /* Estrutura para deslizar o item */
+        .item-wrapper {
+            position: relative;
+            margin-bottom: 10px;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .item-acoes-fundo {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            width: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: space-evenly;
+            background: #f1f5f9;
+            border-radius: 0 16px 16px 0;
+            z-index: 1;
+        }
+
+        .btn-swipe-acao {
+            border: none;
+            background: transparent;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 10px;
+        }
+
+        .item { 
+            background: var(--card); 
+            padding: 16px; 
+            border-radius: 16px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border: 1px solid #f1f5f9; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02); 
+            position: relative;
+            z-index: 2;
+            transition: transform 0.2s ease-out;
+            touch-action: pan-y;
+        }
+
         .info-principal { display: flex; flex-direction: column; flex: 1; padding-right: 10px; }
         .info-principal b { font-size: 14px; color: #1e293b; margin-bottom: 4px; }
         .detalhe-item { font-size: 12px; color: #475569; margin-top: 2px; display: block; line-height: 1.4; }
         .data-tag { font-size: 10px; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
-        .valor-item { text-align: right; font-weight: 700; color: var(--accent); font-size: 15px; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; min-height: 50px; }
+        .valor-item { text-align: right; font-weight: 700; color: var(--accent); font-size: 15px; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; min-height: 50px; }
         .sub-valor { font-size: 10px; color: var(--secondary); font-weight: 600; }
-
-        .acoes-item { display: flex; gap: 8px; margin-top: 6px; }
 
         .area-acoes { display: flex; gap: 8px; margin-bottom: 20px; }
         .bt-acao { border: none; padding: 15px; border-radius: 14px; font-weight: 700; font-size: 12px; cursor: pointer; flex: 1; }
@@ -401,47 +443,63 @@
                 let infoHtml = '';
                 if (secaoAtual === 'reparos') {
                     infoHtml = `
-                        <div class="info-principal">
-                            <span class="data-tag">📅 ${formatarDataBR(x.data)}</span>
-                            <b>👤 ${x.cliente || 'Avulso'}</b>
-                            <span class="detalhe-item">🛠️ ${x.ser || 'Reparo'}</span>
+                    <div class="item-wrapper animar">
+                        <div class="item-acoes-fundo">
+                            <button class="btn-swipe-acao" onclick="editarReparo(${i})" title="Editar">✏️</button>
+                            <button class="btn-swipe-acao" onclick="apagar(${i})" title="Excluir">🗑️</button>
                         </div>
-                        <div class="valor-item">
-                            <div>R$ ${(x.valorMeu || 0).toFixed(2)}</div>
-                            <span class="sub-valor">(Bruto: R$ ${(x.bruto || 0).toFixed(2)})</span>
-                            <div class="acoes-item">
-                                <span onclick="editarReparo(${i})" style="color:#64748b; font-size:16px; cursor:pointer;" title="Editar">✏️</span>
-                                <span onclick="apagar(${i})" style="color:#cbd5e1; font-size:16px; cursor:pointer;" title="Excluir">🗑</span>
+                        <div class="item" id="item-card-${i}">
+                            <div class="info-principal">
+                                <span class="data-tag">📅 ${formatarDataBR(x.data)}</span>
+                                <b>👤 ${x.cliente || 'Avulso'}</b>
+                                <span class="detalhe-item">🛠️ ${x.ser || 'Reparo'}</span>
+                            </div>
+                            <div class="valor-item">
+                                <div>R$ ${(x.valorMeu || 0).toFixed(2)}</div>
+                                <span class="sub-valor">(Bruto: R$ ${(x.bruto || 0).toFixed(2)})</span>
                             </div>
                         </div>
+                    </div>
                     `;
                 } else if (secaoAtual === 'aulas') {
                     infoHtml = `
-                        <div class="info-principal">
-                            <span class="data-tag">📅 ${formatarDataBR(x.data)}</span>
-                            <b>🎓 Aluno: ${x.aluno || 'Geral'}</b>
-                            <span class="detalhe-item">⏱️ ${x.qtd || 0}h de aula</span>
+                    <div class="item-wrapper animar">
+                        <div class="item-acoes-fundo">
+                            <button class="btn-swipe-acao" onclick="apagar(${i})" title="Excluir">🗑️</button>
                         </div>
-                        <div class="valor-item">
-                            <div>R$ ${(x.valorMeu || 0).toFixed(2)}</div>
-                            <div onclick="apagar(${i})" style="color:#cbd5e1; font-size:16px; margin-top:4px; cursor:pointer;">🗑</div>
+                        <div class="item" id="item-card-${i}">
+                            <div class="info-principal">
+                                <span class="data-tag">📅 ${formatarDataBR(x.data)}</span>
+                                <b>🎓 Aluno: ${x.aluno || 'Geral'}</b>
+                                <span class="detalhe-item">⏱️ ${x.qtd || 0}h de aula</span>
+                            </div>
+                            <div class="valor-item">
+                                <div>R$ ${(x.valorMeu || 0).toFixed(2)}</div>
+                            </div>
                         </div>
+                    </div>
                     `;
                 } else {
                     infoHtml = `
-                        <div class="info-principal">
-                            <span class="data-tag">📅 ${formatarDataBR(x.data)}</span>
-                            <b>${secaoAtual === 'diaria' ? '💵 Diária' : '⏰ Hora Extra'}</b>
-                            <span class="detalhe-item">${x.qtd ? x.qtd + 'h registradas' : 'Registro de entrada'}</span>
+                    <div class="item-wrapper animar">
+                        <div class="item-acoes-fundo">
+                            <button class="btn-swipe-acao" onclick="apagar(${i})" title="Excluir">🗑️</button>
                         </div>
-                        <div class="valor-item">
-                            <div>R$ ${(x.valorMeu || 0).toFixed(2)}</div>
-                            <div onclick="apagar(${i})" style="color:#cbd5e1; font-size:16px; margin-top:4px; cursor:pointer;">🗑</div>
+                        <div class="item" id="item-card-${i}">
+                            <div class="info-principal">
+                                <span class="data-tag">📅 ${formatarDataBR(x.data)}</span>
+                                <b>${secaoAtual === 'diaria' ? '💵 Diária' : '⏰ Hora Extra'}</b>
+                                <span class="detalhe-item">${x.qtd ? x.qtd + 'h registradas' : 'Registro de entrada'}</span>
+                            </div>
+                            <div class="valor-item">
+                                <div>R$ ${(x.valorMeu || 0).toFixed(2)}</div>
+                            </div>
                         </div>
+                    </div>
                     `;
                 }
 
-                listaHtml += `<div class="item animar">${infoHtml}</div>`;
+                listaHtml += infoHtml;
             });
         }
 
@@ -463,6 +521,45 @@
             <div id="meu-form" class="caixa-form animar">${renderFormHtml()}</div>
             ${listaHtml}
         `;
+
+        configurarGestosSwipe();
+    }
+
+    function configurarGestosSwipe() {
+        if (!db[secaoAtual]) return;
+
+        db[secaoAtual].forEach((_, i) => {
+            let el = document.getElementById(`item-card-${i}`);
+            if (!el) return;
+
+            let startX = 0, currentX = 0;
+
+            el.addEventListener('touchstart', e => {
+                startX = e.touches[0].clientX;
+            }, { passive: true });
+
+            el.addEventListener('touchmove', e => {
+                currentX = e.touches[0].clientX;
+                let diffX = currentX - startX;
+
+                if (diffX < 0 && diffX > -120) {
+                    el.style.transform = `translateX(${diffX}px)`;
+                } else if (diffX >= 0) {
+                    el.style.transform = `translateX(0px)`;
+                }
+            }, { passive: true });
+
+            el.addEventListener('touchend', () => {
+                let diffX = currentX - startX;
+                if (currentX !== 0 && diffX < -50) {
+                    el.style.transform = `translateX(-110px)`;
+                } else {
+                    el.style.transform = `translateX(0px)`;
+                }
+                startX = 0;
+                currentX = 0;
+            });
+        });
     }
 
     function renderFormHtml() {
@@ -631,4 +728,3 @@
 </script>
 </body>
 </html>
-
