@@ -193,8 +193,6 @@
 
         #modal-historico, #modal-config, #modal-comprovante { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); z-index:1000; justify-content:center; align-items:center; backdrop-filter: blur(4px); }
         .modal-body { background:white; width:90%; max-width:400px; border-radius:24px; padding:20px; max-height:80vh; overflow-y:auto; }
-        
-        .tag-servico { background: #f1f5f9; padding: 8px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; display: flex; justify-content: space-between; margin-bottom: 6px; }
     </style>
 </head>
 <body>
@@ -239,6 +237,7 @@
     <button class="btn-baixa" onclick="fecharMes()">BAIXA</button>
 </div>
 
+<!-- Form de Inclusão com os novos campos -->
 <div class="caixa-form" id="form-adicionar">
     <label>Data</label>
     <input type="date" id="f-d">
@@ -294,24 +293,10 @@
     var db = initDB();
     var secao = 'reparos';
     var edicaoIdx = -1;
-    var listaServicosTemp = [];
-
-    const tabelaPrecos = [
-        { nome: "Rasgo bladder grande", preco: 150 },
-        { nome: "Rasgo bladder médio", preco: 100 },
-        { nome: "Rasgo bladder pequeno", preco: 50 },
-        { nome: "Furo 1/2", preco: 50 },
-        { nome: "Furo 3/5", preco: 100 },
-        { nome: "Colagem de válvula normal", preco: 50 },
-        { nome: "Colagem de válvula central", preco: 80 },
-        { nome: "Troca de mangueirinha", preco: 40 },
-        { nome: "Regulagem de barra simples", preco: 35 }
-    ];
 
     function mudar(s) {
         secao = s;
         edicaoIdx = -1;
-        listaServicosTemp = [];
         document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
         let btn = document.getElementById('btn-' + s);
         if(btn) btn.classList.add('active');
@@ -335,7 +320,6 @@
     function fecharForm() {
         document.getElementById('form-adicionar').style.display = 'none';
         edicaoIdx = -1;
-        listaServicosTemp = [];
     }
 
     function montarCamposForm() {
@@ -343,38 +327,19 @@
         if(secao === 'reparos') {
             c.innerHTML = `
                 <label>Nome do Cliente</label>
-                <input type="text" id="f-cli" placeholder="Ex: Rama">
+                <input type="text" id="f-cli" placeholder="Digite o nome do cliente">
                 
-                <label>Serviço</label>
-                <select id="f-sel-ser" onchange="aoMudarServico()">
-                    <option value="">-- Selecione --</option>
-                    ${tabelaPrecos.map((p, i) => `<option value="${i}">${p.nome} - R$ ${p.preco}</option>`).join('')}
-                    <option value="custom">+ Personalizado</option>
-                </select>
+                <label>Reparação</label>
+                <input type="text" id="f-rep" placeholder="Descrição da reparação">
 
-                <div id="box-qtd" style="display:none;">
-                    <label>Quantidade</label>
-                    <input type="number" id="f-qtd" value="1">
-                    <button type="button" onclick="addServico()" style="width:100%; padding:8px; background:var(--card-dark); color:white; border:none; border-radius:8px; margin-bottom:10px;">Adicionar Serviço</button>
-                </div>
+                <label>Valor (R$)</label>
+                <input type="number" step="0.01" id="f-bru" placeholder="0.00">
 
-                <div id="box-custom" style="display:none;">
-                    <label>Nome do Serviço Avulso</label>
-                    <input type="text" id="f-ser-custom">
-                    <label>Valor Bruto (R$)</label>
-                    <input type="number" id="f-bru-custom">
-                    <button type="button" onclick="addServico()" style="width:100%; padding:8px; background:var(--card-dark); color:white; border:none; border-radius:8px; margin-bottom:10px;">Adicionar Serviço</button>
-                </div>
-
-                <div id="lista-temp"></div>
-
-                <label>Valor Bruto Total (R$)</label>
-                <input type="number" id="f-bru" placeholder="0.00">
-                <label>Gasto Peças (R$)</label>
-                <input type="number" id="f-gas" value="0">
+                <label>Gasto (R$)</label>
+                <input type="number" step="0.01" id="f-gas" value="0" placeholder="0.00">
             `;
         } else if(secao === 'diaria') {
-            c.innerHTML = `<label>Valor Diária (R$)</label><input type="number" id="f-vd" placeholder="0.00">`;
+            c.innerHTML = `<label>Valor Diária (R$)</label><input type="number" step="0.01" id="f-vd" placeholder="0.00">`;
         } else {
             c.innerHTML = `
                 <label>${secao === 'horas' ? 'Horas Trabalhadas' : (secao === 'assist' ? 'Quantidade' : 'Horas de Aula')}</label>
@@ -384,41 +349,16 @@
         }
     }
 
-    function aoMudarServico() {
-        let v = document.getElementById('f-sel-ser').value;
-        document.getElementById('box-qtd').style.display = (v && v !== 'custom') ? 'block' : 'none';
-        document.getElementById('box-custom').style.display = (v === 'custom') ? 'block' : 'none';
-    }
-
-    function addServico() {
-        let sel = document.getElementById('f-sel-ser').value;
-        if(sel === 'custom') {
-            let n = document.getElementById('f-ser-custom').value || 'Serviço';
-            let p = parseFloat(document.getElementById('f-bru-custom').value) || 0;
-            listaServicosTemp.push({ nome: n, preco: p });
-        } else if(sel !== '') {
-            let item = tabelaPrecos[parseInt(sel)];
-            let q = parseInt(document.getElementById('f-qtd').value) || 1;
-            listaServicosTemp.push({ nome: q > 1 ? `${q}x ${item.nome}` : item.nome, preco: item.preco * q });
-        }
-        
-        let tot = listaServicosTemp.reduce((a, b) => a + b.preco, 0);
-        document.getElementById('f-bru').value = tot;
-        document.getElementById('lista-temp').innerHTML = listaServicosTemp.map((s, idx) => `
-            <div class="tag-servico"><span>${s.nome}</span><span onclick="listaServicosTemp.splice(${idx},1);addServico();" style="color:red;cursor:pointer;">✕</span></div>
-        `).join('');
-    }
-
     function salvar() {
         let d = document.getElementById('f-d').value;
         if(!d) return alert('Selecione a data');
         let reg = { data: d };
 
         if(secao === 'reparos') {
-            reg.cliente = document.getElementById('f-cli').value || 'Avulso';
+            reg.cliente = document.getElementById('f-cli').value || 'Cliente não informado';
+            reg.ser = document.getElementById('f-rep').value || 'Reparo';
             reg.bruto = parseFloat(document.getElementById('f-bru').value) || 0;
             reg.gasto = parseFloat(document.getElementById('f-gas').value) || 0;
-            reg.ser = listaServicosTemp.length ? listaServicosTemp.map(x=>x.nome).join(', ') : (document.getElementById('f-ser-custom')?.value || 'Reparo');
             reg.valorMeu = (reg.bruto - reg.gasto) / 2;
         } else if(secao === 'diaria') {
             reg.valorMeu = parseFloat(document.getElementById('f-vd').value) || 0;
@@ -454,6 +394,7 @@
         document.getElementById('f-d').value = item.data;
         if(secao === 'reparos') {
             document.getElementById('f-cli').value = item.cliente || '';
+            document.getElementById('f-rep').value = item.ser || '';
             document.getElementById('f-bru').value = item.bruto || 0;
             document.getElementById('f-gas').value = item.gasto || 0;
         } else if(secao === 'diaria') {
@@ -466,4 +407,111 @@
 
     function render() {
         let list = db[secao] || [];
-        let totalMeu = 0, totalBr
+        let totalMeu = 0, totalBruto = 0, totalGasto = 0;
+
+        let html = list.map((x, i) => {
+            totalMeu += (x.valorMeu || 0);
+            totalBruto += (x.bruto || 0);
+            totalGasto += (x.gasto || 0);
+
+            let titulo = x.cliente || x.aluno || (secao === 'horas' ? `${x.qtd} Horas Extra` : (secao === 'assist' ? `${x.qtd} Assistências` : 'Diária'));
+            let sub = x.ser || (secao === 'aulas' ? `${x.qtd} Horas de aula` : '');
+
+            return `
+            <div class="card-registro">
+                <div class="info-esq">
+                    <span class="data-linha">📅 ${formatarData(x.data)}</span>
+                    <span class="nome-linha">👤 ${titulo}</span>
+                    ${sub ? `<span class="servico-linha">🛠️ ${sub}</span>` : ''}
+                    <div class="acoes-item-popup">
+                        <button class="btn-ico" onclick="editar(${i})">✏️</button>
+                        <button class="btn-ico" onclick="deletar(${i})">🗑️</button>
+                    </div>
+                </div>
+                <div class="valor-dir">
+                    <span class="valor-verde">R$ ${(x.valorMeu || 0).toFixed(2)}</span>
+                    ${secao === 'reparos' ? `<span class="bruto-sub">(Bruto: R$ ${(x.bruto || 0).toFixed(2)})</span>` : ''}
+                </div>
+            </div>`;
+        }).join('');
+
+        document.getElementById('lista-cards').innerHTML = html || '<p style="text-align:center; color:var(--text-muted); font-size:13px; margin-top:20px;">Nenhum registro encontrado.</p>';
+
+        document.getElementById('label-saldo-topo').innerText = `SALDO ${secao.toUpperCase()}`;
+        document.getElementById('val-saldo-topo').innerText = `R$ ${totalMeu.toFixed(2)}`;
+        
+        let painelDet = document.getElementById('painel-detalhes-topo');
+        if(secao === 'reparos') {
+            painelDet.style.display = 'flex';
+            document.getElementById('val-bruto-topo').innerText = `R$ ${totalBruto.toFixed(2)}`;
+            document.getElementById('val-gasto-topo').innerText = `R$ ${totalGasto.toFixed(2)}`;
+        } else {
+            painelDet.style.display = 'none';
+        }
+    }
+
+    function fecharMes() {
+        if(!db[secao].length) return alert('Sem dados no mês atual.');
+        let m = prompt('Digite o mês/ano (ex: 08/2026):');
+        if(!m) return;
+        db[secao].forEach(x => { x.mes = m; db['hist_' + secao].push(x); });
+        db[secao] = [];
+        localStorage.setItem(CHAVE, JSON.stringify(db));
+        render();
+    }
+
+    function abrirHistorico() {
+        let h = db['hist_' + secao] || [];
+        let c = document.getElementById('conteudo-historico');
+        c.innerHTML = h.length ? h.map(x => `
+            <div style="padding:8px 0; border-bottom:1px solid #eee; font-size:12px;">
+                <b>${x.mes}</b> - ${formatarData(x.data)}: R$ ${(x.valorMeu||0).toFixed(2)} (${x.cliente||x.aluno||x.ser||'Item'})
+            </div>
+        `).join('') : '<p style="font-size:12px; color:var(--text-muted);">Histórico vazio.</p>';
+        document.getElementById('modal-historico').style.display = 'flex';
+    }
+
+    function fecharHistorico() { document.getElementById('modal-historico').style.display = 'none'; }
+    function abrirConfig() { document.getElementById('modal-config').style.display = 'flex'; }
+    function fecharConfig() { document.getElementById('modal-config').style.display = 'none'; }
+    
+    function gerarRelatorio() {
+        let l = db[secao] || [];
+        if(!l.length) return alert('Sem dados para relatório');
+        let txt = `*RELATÓRIO - ${secao.toUpperCase()}*\n\n`;
+        let tot = 0;
+        l.forEach(x => {
+            tot += x.valorMeu || 0;
+            txt += `${formatarData(x.data)} - ${x.cliente||x.aluno||'Registro'}: R$ ${(x.valorMeu||0).toFixed(2)}\n`;
+        });
+        txt += `\n*TOTAL: R$ ${tot.toFixed(2)}*`;
+        document.getElementById('conteudo-comprovante').innerText = txt;
+        document.getElementById('modal-comprovante').style.display = 'flex';
+        document.getElementById('btn-wpp').onclick = () => {
+            window.location.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`;
+        };
+    }
+    function fecharComprovante() { document.getElementById('modal-comprovante').style.display = 'none'; }
+
+    function exportarBackup() {
+        let a = document.createElement('a');
+        a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
+        a.download = `backup_app.json`;
+        a.click();
+    }
+
+    function importarBackup(e) {
+        let r = new FileReader();
+        r.onload = (ev) => {
+            db = JSON.parse(ev.target.result);
+            localStorage.setItem(CHAVE, JSON.stringify(db));
+            render();
+            fecharConfig();
+        };
+        r.readAsText(e.target.files[0]);
+    }
+
+    render();
+</script>
+</body>
+</html>
