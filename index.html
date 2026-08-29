@@ -31,6 +31,7 @@
             max-width: 480px; 
             margin: 0 auto;
             padding-bottom: 40px;
+            overflow-x: hidden;
         }
 
         header { 
@@ -140,28 +141,75 @@
             box-shadow: 0 4px 12px rgba(88, 101, 242, 0.3);
         }
 
+        /* Estrutura do Card Deslizável (Swipe) */
+        .card-wrapper {
+            position: relative;
+            margin-bottom: 12px;
+            border-radius: 18px;
+            overflow: hidden;
+            background: #e2e8f0;
+        }
+
+        .actions-left, .actions-right {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            gap: 6px;
+        }
+
+        .actions-left { left: 0; background: var(--accent-purple); color: white; }
+        .actions-right { right: 0; background: #cbd5e1; justify-content: flex-end; }
+
+        .btn-swipe-action {
+            border: none;
+            background: rgba(255,255,255,0.9);
+            border-radius: 10px;
+            padding: 8px 10px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
         .card-registro { 
             background: white; 
-            border-radius: 18px; 
             padding: 16px; 
-            margin-bottom: 12px; 
             display: flex; 
             justify-content: space-between; 
             align-items: flex-start; 
-            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
-            border: 1px solid #f1f5f9;
+            position: relative;
+            z-index: 2;
+            transition: transform 0.2s ease-out;
+            touch-action: pan-y;
         }
+
         .info-esq { display: flex; flex-direction: column; gap: 4px; }
         .data-linha { font-size: 10px; color: var(--text-muted); font-weight: 600; display: flex; align-items: center; gap: 4px; }
         .nome-linha { font-size: 15px; font-weight: 800; color: var(--text-dark); display: flex; align-items: center; gap: 6px; margin-top: 2px; }
         .kite-linha { font-size: 12px; font-weight: 700; color: var(--accent-purple); }
         .servico-linha { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+        
+        .badge-pago {
+            display: inline-block;
+            background: #dcfce7;
+            color: #15803d;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 6px;
+            margin-top: 4px;
+            width: fit-content;
+        }
+
         .valor-dir { text-align: right; }
         .valor-verde { font-size: 15px; font-weight: 800; color: var(--accent-green); }
         .bruto-sub { font-size: 10px; color: var(--text-muted); display: block; margin-top: 2px; }
-
-        .acoes-item-popup { display: flex; gap: 10px; margin-top: 8px; }
-        .btn-ico { border: none; background: none; cursor: pointer; font-size: 14px; opacity: 0.6; }
 
         .caixa-form { background: white; padding: 20px; border-radius: 20px; margin-bottom: 20px; border: 1px solid var(--border-color); display: none; }
         label { display: block; margin-bottom: 5px; font-size: 10px; font-weight: 800; color: var(--text-muted); letter-spacing: 0.5px; }
@@ -172,7 +220,6 @@
 
         #modal-historico, #modal-config, #modal-comprovante { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); z-index:1000; justify-content:center; align-items:center; backdrop-filter: blur(4px); }
         .modal-body { background:white; width:90%; max-width:400px; border-radius:24px; padding:20px; max-height:80vh; overflow-y:auto; }
-        
         .item-tabela-preco { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
     </style>
 </head>
@@ -207,7 +254,7 @@
 
 <div class="grid-botoes-acao">
     <button class="btn-add" onclick="abrirForm()">+ ADICIONAR</button>
-    <button class="btn-baixa" onclick="fecharMes()">BAIXA</button>
+    <button class="btn-baixa" onclick="fecharMes()">BAIXA GERAL</button>
 </div>
 
 <!-- Form de Inclusão -->
@@ -221,20 +268,15 @@
     <label>Nome do Kite</label>
     <input type="text" id="f-kite" placeholder="Ex: Core XR7 10m / Duotone Rebel">
 
-    <!-- Área de Adição de Múltiplos Reparos -->
     <div style="background:#f1f5f9; padding:12px; border-radius:12px; margin-bottom:12px;">
         <label style="color:var(--accent-purple);">SELECIONAR REPARAÇÕES</label>
         
         <div style="display:flex; gap:8px;">
             <div style="flex:2;">
-                <select id="f-sel-rep" style="margin-bottom:0;">
-                    <!-- Opções só com os nomes -->
-                </select>
+                <select id="f-sel-rep" style="margin-bottom:0;"></select>
             </div>
             <div style="flex:1;">
-                <select id="f-qtd" style="margin-bottom:0;">
-                    <!-- Opções 1 a 11 -->
-                </select>
+                <select id="f-qtd" style="margin-bottom:0;"></select>
             </div>
         </div>
 
@@ -243,7 +285,6 @@
         </button>
     </div>
 
-    <!-- Lista dos Itens Adicionados neste atendimento -->
     <label>Reparos Incluídos:</label>
     <div class="box-itens-adicionados" id="lista-itens-temp">
         <p style="font-size:11px; color:var(--text-muted); margin:0; text-align:center;">Nenhum reparo incluído ainda.</p>
@@ -309,7 +350,7 @@
 </div>
 
 <script>
-    const CHAVE = 'meu_trabalho_app_v4';
+    const CHAVE = 'meu_trabalho_app_v5';
     
     const precosPadrao = [
         { nome: "Rasgo", preco: 50 },
@@ -339,14 +380,12 @@
         return `${day}/${m}/${y}`;
     }
 
-    // Carrega o Select mostrando APENAS o nome
     function carregarSelectReparos() {
         let select = document.getElementById('f-sel-rep');
         select.innerHTML = db.tabelaPrecos.map((item, idx) => 
             `<option value="${idx}">${item.nome}</option>`
         ).join('');
 
-        // Carrega quantidades de 1 a 11
         let selectQtd = document.getElementById('f-qtd');
         let qtdsHtml = '';
         for(let i = 1; i <= 11; i++) {
@@ -427,7 +466,6 @@
         let bruto = parseFloat(document.getElementById('f-bru').value) || 0;
         let gasto = parseFloat(document.getElementById('f-gas').value) || 0;
 
-        // Monta o texto de resumo dos serviços prestados
         let resumoServicos = '';
         if(itensTempAdicionados.length > 0) {
             resumoServicos = itensTempAdicionados.map(i => `${i.qtd}x ${i.nome}`).join(', ');
@@ -442,11 +480,16 @@
             ser: resumoServicos,
             bruto: bruto,
             gasto: gasto,
+            pago: false,
             valorMeu: (bruto - gasto) / 2
         };
 
-        if(edicaoIdx >= 0) db.reparos[edicaoIdx] = reg;
-        else db.reparos.push(reg);
+        if(edicaoIdx >= 0) {
+            reg.pago = db.reparos[edicaoIdx].pago || false;
+            db.reparos[edicaoIdx] = reg;
+        } else {
+            db.reparos.push(reg);
+        }
 
         db.reparos.sort((a,b) => new Date(b.data) - new Date(a.data));
         localStorage.setItem(CHAVE, JSON.stringify(db));
@@ -454,154 +497,12 @@
         render();
     }
 
-    function deletar(i) {
-        if(confirm('Excluir este item?')) {
-            db.reparos.splice(i, 1);
-            localStorage.setItem(CHAVE, JSON.stringify(db));
-            render();
-        }
-    }
-
-    function editar(i) {
-        let item = db.reparos[i];
-        edicaoIdx = i;
-        abrirForm();
-        document.getElementById('f-d').value = item.data;
-        document.getElementById('f-cli').value = item.cliente || '';
-        document.getElementById('f-kite').value = item.kite || '';
-        document.getElementById('f-bru').value = item.bruto || 0;
-        document.getElementById('f-gas').value = item.gasto || 0;
-    }
-
-    function render() {
-        let list = db.reparos || [];
-        let totalMeu = 0, totalBruto = 0, totalGasto = 0;
-
-        let html = list.map((x, i) => {
-            totalMeu += (x.valorMeu || 0);
-            totalBruto += (x.bruto || 0);
-            totalGasto += (x.gasto || 0);
-
-            return `
-            <div class="card-registro">
-                <div class="info-esq">
-                    <span class="data-linha">📅 ${formatarData(x.data)}</span>
-                    <span class="nome-linha">👤 ${x.cliente}</span>
-                    ${x.kite ? `<span class="kite-linha">🪁 ${x.kite}</span>` : ''}
-                    <span class="servico-linha">🛠️ ${x.ser}</span>
-                    <div class="acoes-item-popup">
-                        <button class="btn-ico" onclick="editar(${i})">✏️</button>
-                        <button class="btn-ico" onclick="deletar(${i})">🗑️</button>
-                    </div>
-                </div>
-                <div class="valor-dir">
-                    <span class="valor-verde">R$ ${(x.valorMeu || 0).toFixed(2)}</span>
-                    <span class="bruto-sub">(Bruto: R$ ${(x.bruto || 0).toFixed(2)})</span>
-                </div>
-            </div>`;
-        }).join('');
-
-        document.getElementById('lista-cards').innerHTML = html || '<p style="text-align:center; color:var(--text-muted); font-size:13px; margin-top:20px;">Nenhum reparo cadastrado.</p>';
-
-        document.getElementById('val-saldo-topo').innerText = `R$ ${totalMeu.toFixed(2)}`;
-        document.getElementById('val-bruto-topo').innerText = `R$ ${totalBruto.toFixed(2)}`;
-        document.getElementById('val-gasto-topo').innerText = `R$ ${totalGasto.toFixed(2)}`;
-    }
-
-    /* Gerenciador da Tabela de Preços (Engrenagem) */
-    function renderTabelaPrecos() {
-        let cont = document.getElementById('lista-tabela-precos');
-        cont.innerHTML = db.tabelaPrecos.map((item, i) => `
-            <div class="item-tabela-preco">
-                <span><b>${item.nome}</b> - R$ ${item.preco.toFixed(2)}</span>
-                <button onclick="removerTipoReparo(${i})" style="border:none; background:none; color:red; font-weight:bold; cursor:pointer;">✕</button>
-            </div>
-        `).join('');
-    }
-
-    function adicionarNovoTipoReparo() {
-        let n = document.getElementById('cfg-nome').value;
-        let p = parseFloat(document.getElementById('cfg-preco').value);
-        if(!n || isNaN(p)) return alert('Preencha o nome e o preço corretamente.');
-        
-        db.tabelaPrecos.push({ nome: n, preco: p });
-        localStorage.setItem(CHAVE, JSON.stringify(db));
-        document.getElementById('cfg-nome').value = '';
-        document.getElementById('cfg-preco').value = '';
-        renderTabelaPrecos();
-    }
-
-    function removerTipoReparo(i) {
-        db.tabelaPrecos.splice(i, 1);
-        localStorage.setItem(CHAVE, JSON.stringify(db));
-        renderTabelaPrecos();
-    }
-
-    function fecharMes() {
-        if(!db.reparos.length) return alert('Sem dados no mês atual.');
-        let m = prompt('Digite o mês/ano (ex: 08/2026):');
-        if(!m) return;
-        db.reparos.forEach(x => { x.mes = m; db.hist_reparos.push(x); });
-        db.reparos = [];
+    function alternarPago(i) {
+        db.reparos[i].pago = !db.reparos[i].pago;
         localStorage.setItem(CHAVE, JSON.stringify(db));
         render();
     }
 
-    function abrirHistorico() {
-        let h = db.hist_reparos || [];
-        let c = document.getElementById('conteudo-historico');
-        c.innerHTML = h.length ? h.map(x => `
-            <div style="padding:8px 0; border-bottom:1px solid #eee; font-size:12px;">
-                <b>${x.mes}</b> - ${formatarData(x.data)}: R$ ${(x.valorMeu||0).toFixed(2)} (${x.cliente} | Kite: ${x.kite||'N/I'} - ${x.ser})
-            </div>
-        `).join('') : '<p style="font-size:12px; color:var(--text-muted);">Histórico vazio.</p>';
-        document.getElementById('modal-historico').style.display = 'flex';
-    }
-
-    function fecharHistorico() { document.getElementById('modal-historico').style.display = 'none'; }
-    function abrirConfig() { 
-        renderTabelaPrecos();
-        document.getElementById('modal-config').style.display = 'flex'; 
-    }
-    function fecharConfig() { document.getElementById('modal-config').style.display = 'none'; }
-    
-    function gerarRelatorio() {
-        let l = db.reparos || [];
-        if(!l.length) return alert('Sem dados para relatório');
-        let txt = `*RELATÓRIO - REPAROS*\n\n`;
-        let tot = 0;
-        l.forEach(x => {
-            tot += x.valorMeu || 0;
-            txt += `${formatarData(x.data)} - ${x.cliente} [Kite: ${x.kite||'N/A'}] (${x.ser}): R$ ${(x.valorMeu||0).toFixed(2)}\n`;
-        });
-        txt += `\n*TOTAL: R$ ${tot.toFixed(2)}*`;
-        document.getElementById('conteudo-comprovante').innerText = txt;
-        document.getElementById('modal-comprovante').style.display = 'flex';
-        document.getElementById('btn-wpp').onclick = () => {
-            window.location.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`;
-        };
-    }
-    function fecharComprovante() { document.getElementById('modal-comprovante').style.display = 'none'; }
-
-    function exportarBackup() {
-        let a = document.createElement('a');
-        a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
-        a.download = `backup_reparos.json`;
-        a.click();
-    }
-
-    function importarBackup(e) {
-        let r = new FileReader();
-        r.onload = (ev) => {
-            db = JSON.parse(ev.target.result);
-            localStorage.setItem(CHAVE, JSON.stringify(db));
-            render();
-            fecharConfig();
-        };
-        r.readAsText(e.target.files[0]);
-    }
-
-    render();
-</script>
-</body>
-</html>
+    function enviarWhatsAppCliente(i) {
+        let x = db.reparos[i];
+        let txt = `*C
