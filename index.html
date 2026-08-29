@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MEU TRABALHO</title>
+    <title>MEU TRABALHO - REPARAÇÃO</title>
 
     <link rel="icon" type="image/png" href="Icon.png.png">
     <link rel="apple-touch-icon" href="Icon.png.png">
@@ -48,32 +48,7 @@
             letter-spacing: 1.5px;
         }
         .header-brand img { width: 28px; height: 28px; object-fit: contain; }
-        .btn-gear { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted); opacity: 0.8; }
-
-        nav { 
-            display: flex; 
-            gap: 8px; 
-            overflow-x: auto; 
-            padding-bottom: 15px; 
-            scrollbar-width: none;
-        }
-        nav::-webkit-scrollbar { display: none; }
-        nav button { 
-            background: transparent; 
-            border: none; 
-            padding: 10px 18px; 
-            border-radius: 12px; 
-            font-size: 12px; 
-            font-weight: 700; 
-            color: var(--text-muted); 
-            white-space: nowrap; 
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        nav button.active { 
-            background: var(--card-dark); 
-            color: white; 
-        }
+        .btn-gear { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-muted); }
 
         .card-resumo { 
             background: var(--card-dark); 
@@ -193,6 +168,8 @@
 
         #modal-historico, #modal-config, #modal-comprovante { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); z-index:1000; justify-content:center; align-items:center; backdrop-filter: blur(4px); }
         .modal-body { background:white; width:90%; max-width:400px; border-radius:24px; padding:20px; max-height:80vh; overflow-y:auto; }
+        
+        .item-tabela-preco { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -205,20 +182,12 @@
     <button class="btn-gear" onclick="abrirConfig()">⚙️</button>
 </header>
 
-<nav>
-    <button onclick="mudar('horas')" id="btn-horas">HORA EXTRA</button>
-    <button onclick="mudar('reparos')" id="btn-reparos" class="active">REPAROS</button>
-    <button onclick="mudar('assist')" id="btn-assist">ASSISTÊNCIA</button>
-    <button onclick="mudar('aulas')" id="btn-aulas">AULAS</button>
-    <button onclick="mudar('diaria')" id="btn-diaria">DIÁRIA</button>
-</nav>
-
 <div class="card-resumo">
     <button class="btn-relatorio-top" onclick="gerarRelatorio()" title="Gerar Relatório">📥</button>
-    <span class="label-saldo" id="label-saldo-topo">SALDO REPAROS</span>
+    <span class="label-saldo">SALDO REPAROS</span>
     <h1 class="valor-saldo" id="val-saldo-topo">R$ 0,00</h1>
     <div class="divisoria"></div>
-    <div class="grid-detalhes" id="painel-detalhes-topo">
+    <div class="grid-detalhes">
         <div class="item-detalhe">
             <span>BRUTO TOTAL</span>
             <b id="val-bruto-topo">R$ 0.00</b>
@@ -237,12 +206,27 @@
     <button class="btn-baixa" onclick="fecharMes()">BAIXA</button>
 </div>
 
-<!-- Form de Inclusão com os novos campos -->
+<!-- Form de Inclusão -->
 <div class="caixa-form" id="form-adicionar">
     <label>Data</label>
     <input type="date" id="f-d">
 
-    <div id="campos-dinamicos"></div>
+    <label>Nome do Cliente</label>
+    <input type="text" id="f-cli" placeholder="Ex: João Silva">
+
+    <label>Tipo de Reparação</label>
+    <select id="f-sel-rep" onchange="recalcularValorAuto()">
+        <!-- Opções carregadas via JS da Tabela de Preços -->
+    </select>
+
+    <label>Quantidade de Reparos</label>
+    <input type="number" id="f-qtd" value="1" min="1" oninput="recalcularValorAuto()">
+
+    <label>Valor Calculado (R$)</label>
+    <input type="number" step="0.01" id="f-bru" placeholder="0.00">
+
+    <label>Gasto com Peças (R$)</label>
+    <input type="number" step="0.01" id="f-gas" value="0" placeholder="0.00">
 
     <div style="display:flex; gap:10px; margin-top:10px;">
         <button onclick="salvar()" style="flex:1; background:var(--card-dark); color:white; border:none; padding:12px; border-radius:10px; font-weight:bold; cursor:pointer;">Salvar</button>
@@ -252,6 +236,7 @@
 
 <div id="lista-cards"></div>
 
+<!-- Modal Histórico -->
 <div id="modal-historico">
     <div class="modal-body">
         <h3 style="margin-top:0;">📜 Histórico Encerrado</h3>
@@ -260,17 +245,33 @@
     </div>
 </div>
 
+<!-- Modal Configurações & Tabela de Preços -->
 <div id="modal-config">
-    <div class="modal-body" style="text-align:center;">
-        <h3 style="margin-top:0;">⚙️ Configurações e Backup</h3>
-        <p style="font-size:12px; color:var(--text-muted);">Gerencie os dados salvos no seu aparelho.</p>
-        <button onclick="exportarBackup()" style="width:100%; padding:12px; background:var(--card-dark); color:white; border:none; border-radius:12px; font-weight:bold; margin-bottom:10px; cursor:pointer;">BAIXAR BACKUP</button>
-        <button onclick="document.getElementById('input-importar').click()" style="width:100%; padding:12px; background:#e2e8f0; color:var(--text-dark); border:none; border-radius:12px; font-weight:bold; cursor:pointer;">RESTAURAR BACKUP</button>
+    <div class="modal-body">
+        <h3 style="margin-top:0; text-align:center;">⚙️ Tabela de Reparos</h3>
+        
+        <div style="background:#f8fafc; padding:12px; border-radius:12px; margin-bottom:15px; border:1px solid #e2e8f0;">
+            <label style="margin-top:0;">Nome da Reparação</label>
+            <input type="text" id="cfg-nome" placeholder="Ex: Rasgo">
+            <label>Preço Unitário (R$)</label>
+            <input type="number" step="0.01" id="cfg-preco" placeholder="50.00">
+            <button onclick="adicionarNovoTipoReparo()" style="width:100%; padding:10px; background:var(--accent-purple); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">+ Cadastrar Reparo</button>
+        </div>
+
+        <label>Reparos Cadastrados:</label>
+        <div id="lista-tabela-precos" style="max-height:180px; overflow-y:auto; margin-bottom:15px;"></div>
+
+        <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
+
+        <button onclick="exportarBackup()" style="width:100%; padding:10px; background:var(--card-dark); color:white; border:none; border-radius:10px; font-weight:bold; margin-bottom:8px; cursor:pointer;">BAIXAR BACKUP</button>
+        <button onclick="document.getElementById('input-importar').click()" style="width:100%; padding:10px; background:#e2e8f0; color:var(--text-dark); border:none; border-radius:10px; font-weight:bold; cursor:pointer;">RESTAURAR BACKUP</button>
         <input type="file" id="input-importar" style="display:none;" onchange="importarBackup(event)">
+        
         <button onclick="fecharConfig()" style="width:100%; padding:10px; background:none; border:none; color:red; margin-top:10px; font-weight:bold; cursor:pointer;">Fechar</button>
     </div>
 </div>
 
+<!-- Modal Relatório -->
 <div id="modal-comprovante">
     <div class="modal-body">
         <h3 style="margin-top:0;">📄 Relatório</h3>
@@ -281,28 +282,28 @@
 </div>
 
 <script>
-    const CHAVE = 'meu_trabalho_app_v2';
+    const CHAVE = 'meu_trabalho_app_v3';
     
+    const precosPadrao = [
+        { nome: "Rasgo", preco: 50 },
+        { nome: "Rasgo bladder grande", preco: 150 },
+        { nome: "Furo 1/2", preco: 50 },
+        { nome: "Colagem de válvula", preco: 50 }
+    ];
+
     function initDB() {
-        let def = { horas:[], reparos:[], assist:[], aulas:[], diaria:[], hist_horas:[], hist_reparos:[], hist_assist:[], hist_aulas:[], hist_diaria:[] };
+        let def = { reparos: [], hist_reparos: [], tabelaPrecos: precosPadrao };
         let s = localStorage.getItem(CHAVE);
         if(!s) return def;
-        try { return JSON.parse(s); } catch(e){ return def; }
+        try { 
+            let parsed = JSON.parse(s);
+            if(!parsed.tabelaPrecos) parsed.tabelaPrecos = precosPadrao;
+            return parsed;
+        } catch(e){ return def; }
     }
 
     var db = initDB();
-    var secao = 'reparos';
     var edicaoIdx = -1;
-
-    function mudar(s) {
-        secao = s;
-        edicaoIdx = -1;
-        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-        let btn = document.getElementById('btn-' + s);
-        if(btn) btn.classList.add('active');
-        fecharForm();
-        render();
-    }
 
     function formatarData(d) {
         if(!d) return '';
@@ -310,10 +311,33 @@
         return `${day}/${m}/${y}`;
     }
 
+    function carregarSelectReparos() {
+        let select = document.getElementById('f-sel-rep');
+        select.innerHTML = db.tabelaPrecos.map((item, idx) => 
+            `<option value="${idx}">${item.nome} - R$ ${item.preco.toFixed(2)}</option>`
+        ).join('') + `<option value="outro">Outro (Manual)</option>`;
+    }
+
+    function recalcularValorAuto() {
+        let selVal = document.getElementById('f-sel-rep').value;
+        let qtd = parseInt(document.getElementById('f-qtd').value) || 1;
+        
+        if(selVal !== 'outro') {
+            let item = db.tabelaPrecos[parseInt(selVal)];
+            if(item) {
+                document.getElementById('f-bru').value = (item.preco * qtd).toFixed(2);
+            }
+        }
+    }
+
     function abrirForm() {
+        carregarSelectReparos();
         let f = document.getElementById('form-adicionar');
         document.getElementById('f-d').value = new Date().toISOString().split('T')[0];
-        montarCamposForm();
+        document.getElementById('f-cli').value = '';
+        document.getElementById('f-qtd').value = 1;
+        document.getElementById('f-gas').value = 0;
+        recalcularValorAuto();
         f.style.display = 'block';
     }
 
@@ -322,58 +346,28 @@
         edicaoIdx = -1;
     }
 
-    function montarCamposForm() {
-        let c = document.getElementById('campos-dinamicos');
-        if(secao === 'reparos') {
-            c.innerHTML = `
-                <label>Nome do Cliente</label>
-                <input type="text" id="f-cli" placeholder="Digite o nome do cliente">
-                
-                <label>Reparação</label>
-                <input type="text" id="f-rep" placeholder="Descrição da reparação">
-
-                <label>Valor (R$)</label>
-                <input type="number" step="0.01" id="f-bru" placeholder="0.00">
-
-                <label>Gasto (R$)</label>
-                <input type="number" step="0.01" id="f-gas" value="0" placeholder="0.00">
-            `;
-        } else if(secao === 'diaria') {
-            c.innerHTML = `<label>Valor Diária (R$)</label><input type="number" step="0.01" id="f-vd" placeholder="0.00">`;
-        } else {
-            c.innerHTML = `
-                <label>${secao === 'horas' ? 'Horas Trabalhadas' : (secao === 'assist' ? 'Quantidade' : 'Horas de Aula')}</label>
-                <input type="number" step="0.1" id="f-q" placeholder="Ex: 1.5">
-                ${secao === 'aulas' ? '<label>Nome Aluno</label><input type="text" id="f-aluno" placeholder="Ex: Maria">' : ''}
-            `;
-        }
-    }
-
     function salvar() {
         let d = document.getElementById('f-d').value;
         if(!d) return alert('Selecione a data');
-        let reg = { data: d };
 
-        if(secao === 'reparos') {
-            reg.cliente = document.getElementById('f-cli').value || 'Cliente não informado';
-            reg.ser = document.getElementById('f-rep').value || 'Reparo';
-            reg.bruto = parseFloat(document.getElementById('f-bru').value) || 0;
-            reg.gasto = parseFloat(document.getElementById('f-gas').value) || 0;
-            reg.valorMeu = (reg.bruto - reg.gasto) / 2;
-        } else if(secao === 'diaria') {
-            reg.valorMeu = parseFloat(document.getElementById('f-vd').value) || 0;
-        } else {
-            let q = parseFloat(document.getElementById('f-q').value) || 0;
-            let mult = (secao === 'horas') ? 10 : (secao === 'assist' ? 50 : 100);
-            reg.qtd = q;
-            reg.aluno = document.getElementById('f-aluno')?.value || '';
-            reg.valorMeu = q * mult;
-        }
+        let selVal = document.getElementById('f-sel-rep').value;
+        let qtd = parseInt(document.getElementById('f-qtd').value) || 1;
+        let nomeReparo = selVal === 'outro' ? 'Reparo Avulso' : db.tabelaPrecos[parseInt(selVal)].nome;
 
-        if(edicaoIdx >= 0) db[secao][edicaoIdx] = reg;
-        else db[secao].push(reg);
+        let reg = {
+            data: d,
+            cliente: document.getElementById('f-cli').value || 'Cliente não informado',
+            ser: qtd > 1 ? `${qtd}x ${nomeReparo}` : nomeReparo,
+            bruto: parseFloat(document.getElementById('f-bru').value) || 0,
+            gasto: parseFloat(document.getElementById('f-gas').value) || 0
+        };
 
-        db[secao].sort((a,b) => new Date(b.data) - new Date(a.data));
+        reg.valorMeu = (reg.bruto - reg.gasto) / 2;
+
+        if(edicaoIdx >= 0) db.reparos[edicaoIdx] = reg;
+        else db.reparos.push(reg);
+
+        db.reparos.sort((a,b) => new Date(b.data) - new Date(a.data));
         localStorage.setItem(CHAVE, JSON.stringify(db));
         fecharForm();
         render();
@@ -381,32 +375,24 @@
 
     function deletar(i) {
         if(confirm('Excluir este item?')) {
-            db[secao].splice(i, 1);
+            db.reparos.splice(i, 1);
             localStorage.setItem(CHAVE, JSON.stringify(db));
             render();
         }
     }
 
     function editar(i) {
-        let item = db[secao][i];
+        let item = db.reparos[i];
         edicaoIdx = i;
         abrirForm();
         document.getElementById('f-d').value = item.data;
-        if(secao === 'reparos') {
-            document.getElementById('f-cli').value = item.cliente || '';
-            document.getElementById('f-rep').value = item.ser || '';
-            document.getElementById('f-bru').value = item.bruto || 0;
-            document.getElementById('f-gas').value = item.gasto || 0;
-        } else if(secao === 'diaria') {
-            document.getElementById('f-vd').value = item.valorMeu || 0;
-        } else {
-            document.getElementById('f-q').value = item.qtd || 0;
-            if(item.aluno) document.getElementById('f-aluno').value = item.aluno;
-        }
+        document.getElementById('f-cli').value = item.cliente || '';
+        document.getElementById('f-bru').value = item.bruto || 0;
+        document.getElementById('f-gas').value = item.gasto || 0;
     }
 
     function render() {
-        let list = db[secao] || [];
+        let list = db.reparos || [];
         let totalMeu = 0, totalBruto = 0, totalGasto = 0;
 
         let html = list.map((x, i) => {
@@ -414,15 +400,12 @@
             totalBruto += (x.bruto || 0);
             totalGasto += (x.gasto || 0);
 
-            let titulo = x.cliente || x.aluno || (secao === 'horas' ? `${x.qtd} Horas Extra` : (secao === 'assist' ? `${x.qtd} Assistências` : 'Diária'));
-            let sub = x.ser || (secao === 'aulas' ? `${x.qtd} Horas de aula` : '');
-
             return `
             <div class="card-registro">
                 <div class="info-esq">
                     <span class="data-linha">📅 ${formatarData(x.data)}</span>
-                    <span class="nome-linha">👤 ${titulo}</span>
-                    ${sub ? `<span class="servico-linha">🛠️ ${sub}</span>` : ''}
+                    <span class="nome-linha">👤 ${x.cliente}</span>
+                    <span class="servico-linha">🛠️ ${x.ser}</span>
                     <div class="acoes-item-popup">
                         <button class="btn-ico" onclick="editar(${i})">✏️</button>
                         <button class="btn-ico" onclick="deletar(${i})">🗑️</button>
@@ -430,59 +413,83 @@
                 </div>
                 <div class="valor-dir">
                     <span class="valor-verde">R$ ${(x.valorMeu || 0).toFixed(2)}</span>
-                    ${secao === 'reparos' ? `<span class="bruto-sub">(Bruto: R$ ${(x.bruto || 0).toFixed(2)})</span>` : ''}
+                    <span class="bruto-sub">(Bruto: R$ ${(x.bruto || 0).toFixed(2)})</span>
                 </div>
             </div>`;
         }).join('');
 
-        document.getElementById('lista-cards').innerHTML = html || '<p style="text-align:center; color:var(--text-muted); font-size:13px; margin-top:20px;">Nenhum registro encontrado.</p>';
+        document.getElementById('lista-cards').innerHTML = html || '<p style="text-align:center; color:var(--text-muted); font-size:13px; margin-top:20px;">Nenhum reparo cadastrado.</p>';
 
-        document.getElementById('label-saldo-topo').innerText = `SALDO ${secao.toUpperCase()}`;
         document.getElementById('val-saldo-topo').innerText = `R$ ${totalMeu.toFixed(2)}`;
+        document.getElementById('val-bruto-topo').innerText = `R$ ${totalBruto.toFixed(2)}`;
+        document.getElementById('val-gasto-topo').innerText = `R$ ${totalGasto.toFixed(2)}`;
+    }
+
+    /* Gerenciador da Tabela de Preços (Engrenagem) */
+    function renderTabelaPrecos() {
+        let cont = document.getElementById('lista-tabela-precos');
+        cont.innerHTML = db.tabelaPrecos.map((item, i) => `
+            <div class="item-tabela-preco">
+                <span><b>${item.nome}</b> - R$ ${item.preco.toFixed(2)}</span>
+                <button onclick="removerTipoReparo(${i})" style="border:none; background:none; color:red; font-weight:bold; cursor:pointer;">✕</button>
+            </div>
+        `).join('');
+    }
+
+    function adicionarNovoTipoReparo() {
+        let n = document.getElementById('cfg-nome').value;
+        let p = parseFloat(document.getElementById('cfg-preco').value);
+        if(!n || isNaN(p)) return alert('Preencha o nome e o preço corretamente.');
         
-        let painelDet = document.getElementById('painel-detalhes-topo');
-        if(secao === 'reparos') {
-            painelDet.style.display = 'flex';
-            document.getElementById('val-bruto-topo').innerText = `R$ ${totalBruto.toFixed(2)}`;
-            document.getElementById('val-gasto-topo').innerText = `R$ ${totalGasto.toFixed(2)}`;
-        } else {
-            painelDet.style.display = 'none';
-        }
+        db.tabelaPrecos.push({ nome: n, preco: p });
+        localStorage.setItem(CHAVE, JSON.stringify(db));
+        document.getElementById('cfg-nome').value = '';
+        document.getElementById('cfg-preco').value = '';
+        renderTabelaPrecos();
+    }
+
+    function removerTipoReparo(i) {
+        db.tabelaPrecos.splice(i, 1);
+        localStorage.setItem(CHAVE, JSON.stringify(db));
+        renderTabelaPrecos();
     }
 
     function fecharMes() {
-        if(!db[secao].length) return alert('Sem dados no mês atual.');
+        if(!db.reparos.length) return alert('Sem dados no mês atual.');
         let m = prompt('Digite o mês/ano (ex: 08/2026):');
         if(!m) return;
-        db[secao].forEach(x => { x.mes = m; db['hist_' + secao].push(x); });
-        db[secao] = [];
+        db.reparos.forEach(x => { x.mes = m; db.hist_reparos.push(x); });
+        db.reparos = [];
         localStorage.setItem(CHAVE, JSON.stringify(db));
         render();
     }
 
     function abrirHistorico() {
-        let h = db['hist_' + secao] || [];
+        let h = db.hist_reparos || [];
         let c = document.getElementById('conteudo-historico');
         c.innerHTML = h.length ? h.map(x => `
             <div style="padding:8px 0; border-bottom:1px solid #eee; font-size:12px;">
-                <b>${x.mes}</b> - ${formatarData(x.data)}: R$ ${(x.valorMeu||0).toFixed(2)} (${x.cliente||x.aluno||x.ser||'Item'})
+                <b>${x.mes}</b> - ${formatarData(x.data)}: R$ ${(x.valorMeu||0).toFixed(2)} (${x.cliente} - ${x.ser})
             </div>
         `).join('') : '<p style="font-size:12px; color:var(--text-muted);">Histórico vazio.</p>';
         document.getElementById('modal-historico').style.display = 'flex';
     }
 
     function fecharHistorico() { document.getElementById('modal-historico').style.display = 'none'; }
-    function abrirConfig() { document.getElementById('modal-config').style.display = 'flex'; }
+    function abrirConfig() { 
+        renderTabelaPrecos();
+        document.getElementById('modal-config').style.display = 'flex'; 
+    }
     function fecharConfig() { document.getElementById('modal-config').style.display = 'none'; }
     
     function gerarRelatorio() {
-        let l = db[secao] || [];
+        let l = db.reparos || [];
         if(!l.length) return alert('Sem dados para relatório');
-        let txt = `*RELATÓRIO - ${secao.toUpperCase()}*\n\n`;
+        let txt = `*RELATÓRIO - REPAROS*\n\n`;
         let tot = 0;
         l.forEach(x => {
             tot += x.valorMeu || 0;
-            txt += `${formatarData(x.data)} - ${x.cliente||x.aluno||'Registro'}: R$ ${(x.valorMeu||0).toFixed(2)}\n`;
+            txt += `${formatarData(x.data)} - ${x.cliente} (${x.ser}): R$ ${(x.valorMeu||0).toFixed(2)}\n`;
         });
         txt += `\n*TOTAL: R$ ${tot.toFixed(2)}*`;
         document.getElementById('conteudo-comprovante').innerText = txt;
@@ -496,7 +503,7 @@
     function exportarBackup() {
         let a = document.createElement('a');
         a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
-        a.download = `backup_app.json`;
+        a.download = `backup_reparos.json`;
         a.click();
     }
 
