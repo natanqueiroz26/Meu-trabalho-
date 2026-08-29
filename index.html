@@ -141,39 +141,38 @@
             box-shadow: 0 4px 12px rgba(88, 101, 242, 0.3);
         }
 
-        /* Estrutura do Card Deslizável (Swipe) */
+        /* Estrutura do Card Deslizável (Swipe apenas para esquerda) */
         .card-wrapper {
             position: relative;
             margin-bottom: 12px;
             border-radius: 18px;
             overflow: hidden;
-            background: #e2e8f0;
+            background: #cbd5e1;
         }
 
-        .actions-left, .actions-right {
+        .actions-right {
             position: absolute;
             top: 0;
             bottom: 0;
+            right: 0;
             display: flex;
             align-items: center;
             padding: 0 10px;
             gap: 6px;
+            justify-content: flex-end;
         }
-
-        .actions-left { left: 0; background: var(--accent-purple); color: white; }
-        .actions-right { right: 0; background: #cbd5e1; justify-content: flex-end; }
 
         .btn-swipe-action {
             border: none;
-            background: rgba(255,255,255,0.9);
-            border-radius: 10px;
-            padding: 8px 10px;
+            background: rgba(255,255,255,0.95);
+            border-radius: 12px;
+            padding: 10px;
             font-size: 13px;
             font-weight: bold;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 4px;
+            justify-content: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
@@ -187,6 +186,7 @@
             z-index: 2;
             transition: transform 0.2s ease-out;
             touch-action: pan-y;
+            border-radius: 18px;
         }
 
         .info-esq { display: flex; flex-direction: column; gap: 4px; }
@@ -516,18 +516,26 @@
         window.location.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`;
     }
 
-    function darBaixaItem(i) {
-        if(confirm('Deseja dar baixa e enviar este reparo para o histórico encerrado?')) {
-            let m = prompt('Digite o mês/ano de fechamento (ex: 08/2026):', new Date().toLocaleDateString('pt-BR', {month:'2-digit', year:'numeric'}));
-            if(!m) return;
-            
-            let item = db.reparos.splice(i, 1)[0];
-            item.mes = m;
-            db.hist_reparos.push(item);
-            
-            localStorage.setItem(CHAVE, JSON.stringify(db));
-            render();
-        }
+    function fecharMes() {
+        let pagos = db.reparos.filter(x => x.pago);
+        if(!pagos.length) return alert('Nenhum reparo está marcado como PAGO para dar baixa.');
+
+        let m = prompt('Digite o mês/ano de fechamento (ex: 08/2026):', new Date().toLocaleDateString('pt-BR', {month:'2-digit', year:'numeric'}));
+        if(!m) return;
+
+        let novosReparos = [];
+        db.reparos.forEach(x => {
+            if(x.pago) {
+                x.mes = m;
+                db.hist_reparos.push(x);
+            } else {
+                novosReparos.push(x);
+            }
+        });
+
+        db.reparos = novosReparos;
+        localStorage.setItem(CHAVE, JSON.stringify(db));
+        render();
     }
 
     function deletar(i) {
@@ -560,12 +568,8 @@
 
             return `
             <div class="card-wrapper" id="wrapper-${i}">
-                <div class="actions-left">
-                    <button class="btn-swipe-action" onclick="darBaixaItem(${i})">📦 Dar Baixa</button>
-                </div>
-                
                 <div class="actions-right">
-                    <button class="btn-swipe-action" onclick="enviarWhatsAppCliente(${i})">💬 WhatsApp</button>
+                    <button class="btn-swipe-action" title="Enviar WhatsApp" onclick="enviarWhatsAppCliente(${i})">💬</button>
                     <button class="btn-swipe-action" style="color:${x.pago?'green':'#333'};" onclick="alternarPago(${i})">
                         ${x.pago ? '✅ Pago' : '⏳ Pagar'}
                     </button>
@@ -573,10 +577,7 @@
                     <button class="btn-swipe-action" style="color:red;" onclick="deletar(${i})">🗑️</button>
                 </div>
 
-                <div class="card-registro" id="card-${i}" 
-                     touchstart="handleTouchStart(event)" 
-                     touchmove="handleTouchMove(event, ${i})" 
-                     touchend="handleTouchEnd(event, ${i})">
+                <div class="card-registro" id="card-${i}">
                     <div class="info-esq">
                         <span class="data-linha">📅 ${formatarData(x.data)}</span>
                         <span class="nome-linha">👤 ${x.cliente}</span>
@@ -598,17 +599,16 @@
         document.getElementById('val-bruto-topo').innerText = `R$ ${totalBruto.toFixed(2)}`;
         document.getElementById('val-gasto-topo').innerText = `R$ ${totalGasto.toFixed(2)}`;
 
-        // Reconfigura os eventos de Touch nos cards
         configurarGestosTouch();
     }
 
-    /* Controle de Gestos Touch (Swipe) */
+    /* Controle de Gestos Touch (Apenas para Esquerda) */
     let startX = 0;
     let currentX = 0;
 
     function configurarGestosTouch() {
         let cards = document.querySelectorAll('.card-registro');
-        cards.forEach((card, index) => {
+        cards.forEach((card) => {
             card.addEventListener('touchstart', (e) => {
                 startX = e.touches[0].clientX;
             });
@@ -617,9 +617,9 @@
                 currentX = e.touches[0].clientX;
                 let diff = currentX - startX;
                 
-                // Limita o deslize para não ir longe demais
+                // Só permite arrastar para a esquerda (diff negativo)
+                if(diff > 0) diff = 0;
                 if(diff < -220) diff = -220;
-                if(diff > 120) diff = 120;
 
                 card.style.transform = `translateX(${diff}px)`;
             });
@@ -628,14 +628,11 @@
                 let diff = currentX - startX;
                 card.style.transition = 'transform 0.2s ease-out';
 
-                if (diff < -80) {
-                    // Deslizou para a ESQUERDA -> Mostra opções (WhatsApp, Pagar, Editar, Excluir)
+                if (diff < -60) {
+                    // Mantém o menu aberto
                     card.style.transform = 'translateX(-210px)';
-                } else if (diff > 80) {
-                    // Deslizou para a DIREITA -> Mostra opção Dar Baixa
-                    card.style.transform = 'translateX(110px)';
                 } else {
-                    // Voltar ao normal
+                    // Volta ao normal
                     card.style.transform = 'translateX(0px)';
                 }
                 startX = 0;
@@ -644,7 +641,6 @@
         });
     }
 
-    /* Gerenciador da Tabela de Preços (Engrenagem) */
     function renderTabelaPrecos() {
         let cont = document.getElementById('lista-tabela-precos');
         cont.innerHTML = db.tabelaPrecos.map((item, i) => `
@@ -671,16 +667,6 @@
         db.tabelaPrecos.splice(i, 1);
         localStorage.setItem(CHAVE, JSON.stringify(db));
         renderTabelaPrecos();
-    }
-
-    function fecharMes() {
-        if(!db.reparos.length) return alert('Sem dados para dar baixa geral.');
-        let m = prompt('Digite o mês/ano (ex: 08/2026):', new Date().toLocaleDateString('pt-BR', {month:'2-digit', year:'numeric'}));
-        if(!m) return;
-        db.reparos.forEach(x => { x.mes = m; db.hist_reparos.push(x); });
-        db.reparos = [];
-        localStorage.setItem(CHAVE, JSON.stringify(db));
-        render();
     }
 
     function abrirHistorico() {
