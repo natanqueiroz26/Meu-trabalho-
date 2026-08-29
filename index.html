@@ -154,6 +154,7 @@
         .info-esq { display: flex; flex-direction: column; gap: 4px; }
         .data-linha { font-size: 10px; color: var(--text-muted); font-weight: 600; display: flex; align-items: center; gap: 4px; }
         .nome-linha { font-size: 15px; font-weight: 800; color: var(--text-dark); display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+        .kite-linha { font-size: 12px; font-weight: 700; color: var(--accent-purple); }
         .servico-linha { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 2px; }
         .valor-dir { text-align: right; }
         .valor-verde { font-size: 15px; font-weight: 800; color: var(--accent-green); }
@@ -165,6 +166,9 @@
         .caixa-form { background: white; padding: 20px; border-radius: 20px; margin-bottom: 20px; border: 1px solid var(--border-color); display: none; }
         label { display: block; margin-bottom: 5px; font-size: 10px; font-weight: 800; color: var(--text-muted); letter-spacing: 0.5px; }
         input, select { width: 100%; box-sizing: border-box; padding: 12px; margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 14px; outline: none; background: #fff; }
+
+        .box-itens-adicionados { background: #f8fafc; border: 1px dashed var(--border-color); padding: 10px; border-radius: 10px; margin-bottom: 12px; }
+        .item-adicionado { display: flex; justify-content: space-between; align-items: center; font-size: 12px; padding: 4px 0; border-bottom: 1px solid #edf2f7; }
 
         #modal-historico, #modal-config, #modal-comprovante { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); z-index:1000; justify-content:center; align-items:center; backdrop-filter: blur(4px); }
         .modal-body { background:white; width:90%; max-width:400px; border-radius:24px; padding:20px; max-height:80vh; overflow-y:auto; }
@@ -214,16 +218,39 @@
     <label>Nome do Cliente</label>
     <input type="text" id="f-cli" placeholder="Ex: João Silva">
 
-    <label>Tipo de Reparação</label>
-    <select id="f-sel-rep" onchange="recalcularValorAuto()">
-        <!-- Opções carregadas via JS da Tabela de Preços -->
-    </select>
+    <label>Nome do Kite</label>
+    <input type="text" id="f-kite" placeholder="Ex: Core XR7 10m / Duotone Rebel">
 
-    <label>Quantidade de Reparos</label>
-    <input type="number" id="f-qtd" value="1" min="1" oninput="recalcularValorAuto()">
+    <!-- Área de Adição de Múltiplos Reparos -->
+    <div style="background:#f1f5f9; padding:12px; border-radius:12px; margin-bottom:12px;">
+        <label style="color:var(--accent-purple);">SELECIONAR REPARAÇÕES</label>
+        
+        <div style="display:flex; gap:8px;">
+            <div style="flex:2;">
+                <select id="f-sel-rep" style="margin-bottom:0;">
+                    <!-- Opções só com os nomes -->
+                </select>
+            </div>
+            <div style="flex:1;">
+                <select id="f-qtd" style="margin-bottom:0;">
+                    <!-- Opções 1 a 11 -->
+                </select>
+            </div>
+        </div>
 
-    <label>Valor Calculado (R$)</label>
-    <input type="number" step="0.01" id="f-bru" placeholder="0.00">
+        <button type="button" onclick="incluirItemNaLista()" style="width:100%; margin-top:8px; background:var(--accent-purple); color:white; border:none; padding:8px; border-radius:8px; font-weight:bold; font-size:12px; cursor:pointer;">
+            + Incluir este Reparo
+        </button>
+    </div>
+
+    <!-- Lista dos Itens Adicionados neste atendimento -->
+    <label>Reparos Incluídos:</label>
+    <div class="box-itens-adicionados" id="lista-itens-temp">
+        <p style="font-size:11px; color:var(--text-muted); margin:0; text-align:center;">Nenhum reparo incluído ainda.</p>
+    </div>
+
+    <label>Valor Total Calculado (R$)</label>
+    <input type="number" step="0.01" id="f-bru" value="0.00">
 
     <label>Gasto com Peças (R$)</label>
     <input type="number" step="0.01" id="f-gas" value="0" placeholder="0.00">
@@ -282,7 +309,7 @@
 </div>
 
 <script>
-    const CHAVE = 'meu_trabalho_app_v3';
+    const CHAVE = 'meu_trabalho_app_v4';
     
     const precosPadrao = [
         { nome: "Rasgo", preco: 50 },
@@ -304,6 +331,7 @@
 
     var db = initDB();
     var edicaoIdx = -1;
+    var itensTempAdicionados = [];
 
     function formatarData(d) {
         if(!d) return '';
@@ -311,33 +339,77 @@
         return `${day}/${m}/${y}`;
     }
 
+    // Carrega o Select mostrando APENAS o nome
     function carregarSelectReparos() {
         let select = document.getElementById('f-sel-rep');
         select.innerHTML = db.tabelaPrecos.map((item, idx) => 
-            `<option value="${idx}">${item.nome} - R$ ${item.preco.toFixed(2)}</option>`
-        ).join('') + `<option value="outro">Outro (Manual)</option>`;
+            `<option value="${idx}">${item.nome}</option>`
+        ).join('');
+
+        // Carrega quantidades de 1 a 11
+        let selectQtd = document.getElementById('f-qtd');
+        let qtdsHtml = '';
+        for(let i = 1; i <= 11; i++) {
+            qtdsHtml += `<option value="${i}">${i}x</option>`;
+        }
+        selectQtd.innerHTML = qtdsHtml;
     }
 
-    function recalcularValorAuto() {
-        let selVal = document.getElementById('f-sel-rep').value;
-        let qtd = parseInt(document.getElementById('f-qtd').value) || 1;
-        
-        if(selVal !== 'outro') {
-            let item = db.tabelaPrecos[parseInt(selVal)];
-            if(item) {
-                document.getElementById('f-bru').value = (item.preco * qtd).toFixed(2);
-            }
+    function incluirItemNaLista() {
+        let selIdx = document.getElementById('f-sel-rep').value;
+        let qtd = parseInt(document.getElementById('f-qtd').value);
+        let itemTabela = db.tabelaPrecos[selIdx];
+
+        if(itemTabela) {
+            let subtotal = itemTabela.preco * qtd;
+            itensTempAdicionados.push({
+                nome: itemTabela.nome,
+                qtd: qtd,
+                valorUnit: itemTabela.preco,
+                subtotal: subtotal
+            });
+            atualizarListaTempVisual();
         }
+    }
+
+    function removerItemTemp(index) {
+        itensTempAdicionados.splice(index, 1);
+        atualizarListaTempVisual();
+    }
+
+    function atualizarListaTempVisual() {
+        let cont = document.getElementById('lista-itens-temp');
+        let totalBruto = 0;
+
+        if(itensTempAdicionados.length === 0) {
+            cont.innerHTML = `<p style="font-size:11px; color:var(--text-muted); margin:0; text-align:center;">Nenhum reparo incluído ainda.</p>`;
+        } else {
+            cont.innerHTML = itensTempAdicionados.map((item, idx) => {
+                totalBruto += item.subtotal;
+                return `
+                    <div class="item-adicionado">
+                        <span><b>${item.qtd}x</b> ${item.nome}</span>
+                        <span>R$ ${item.subtotal.toFixed(2)} 
+                            <button onclick="removerItemTemp(${idx})" style="border:none; background:none; color:red; font-weight:bold; cursor:pointer; margin-left:5px;">✕</button>
+                        </span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        document.getElementById('f-bru').value = totalBruto.toFixed(2);
     }
 
     function abrirForm() {
         carregarSelectReparos();
+        itensTempAdicionados = [];
+        atualizarListaTempVisual();
+
         let f = document.getElementById('form-adicionar');
         document.getElementById('f-d').value = new Date().toISOString().split('T')[0];
         document.getElementById('f-cli').value = '';
-        document.getElementById('f-qtd').value = 1;
+        document.getElementById('f-kite').value = '';
         document.getElementById('f-gas').value = 0;
-        recalcularValorAuto();
         f.style.display = 'block';
     }
 
@@ -350,19 +422,28 @@
         let d = document.getElementById('f-d').value;
         if(!d) return alert('Selecione a data');
 
-        let selVal = document.getElementById('f-sel-rep').value;
-        let qtd = parseInt(document.getElementById('f-qtd').value) || 1;
-        let nomeReparo = selVal === 'outro' ? 'Reparo Avulso' : db.tabelaPrecos[parseInt(selVal)].nome;
+        let cliente = document.getElementById('f-cli').value || 'Cliente não informado';
+        let kite = document.getElementById('f-kite').value || 'Kite não informado';
+        let bruto = parseFloat(document.getElementById('f-bru').value) || 0;
+        let gasto = parseFloat(document.getElementById('f-gas').value) || 0;
+
+        // Monta o texto de resumo dos serviços prestados
+        let resumoServicos = '';
+        if(itensTempAdicionados.length > 0) {
+            resumoServicos = itensTempAdicionados.map(i => `${i.qtd}x ${i.nome}`).join(', ');
+        } else {
+            resumoServicos = 'Reparo Avulso';
+        }
 
         let reg = {
             data: d,
-            cliente: document.getElementById('f-cli').value || 'Cliente não informado',
-            ser: qtd > 1 ? `${qtd}x ${nomeReparo}` : nomeReparo,
-            bruto: parseFloat(document.getElementById('f-bru').value) || 0,
-            gasto: parseFloat(document.getElementById('f-gas').value) || 0
+            cliente: cliente,
+            kite: kite,
+            ser: resumoServicos,
+            bruto: bruto,
+            gasto: gasto,
+            valorMeu: (bruto - gasto) / 2
         };
-
-        reg.valorMeu = (reg.bruto - reg.gasto) / 2;
 
         if(edicaoIdx >= 0) db.reparos[edicaoIdx] = reg;
         else db.reparos.push(reg);
@@ -387,6 +468,7 @@
         abrirForm();
         document.getElementById('f-d').value = item.data;
         document.getElementById('f-cli').value = item.cliente || '';
+        document.getElementById('f-kite').value = item.kite || '';
         document.getElementById('f-bru').value = item.bruto || 0;
         document.getElementById('f-gas').value = item.gasto || 0;
     }
@@ -405,6 +487,7 @@
                 <div class="info-esq">
                     <span class="data-linha">📅 ${formatarData(x.data)}</span>
                     <span class="nome-linha">👤 ${x.cliente}</span>
+                    ${x.kite ? `<span class="kite-linha">🪁 ${x.kite}</span>` : ''}
                     <span class="servico-linha">🛠️ ${x.ser}</span>
                     <div class="acoes-item-popup">
                         <button class="btn-ico" onclick="editar(${i})">✏️</button>
@@ -469,7 +552,7 @@
         let c = document.getElementById('conteudo-historico');
         c.innerHTML = h.length ? h.map(x => `
             <div style="padding:8px 0; border-bottom:1px solid #eee; font-size:12px;">
-                <b>${x.mes}</b> - ${formatarData(x.data)}: R$ ${(x.valorMeu||0).toFixed(2)} (${x.cliente} - ${x.ser})
+                <b>${x.mes}</b> - ${formatarData(x.data)}: R$ ${(x.valorMeu||0).toFixed(2)} (${x.cliente} | Kite: ${x.kite||'N/I'} - ${x.ser})
             </div>
         `).join('') : '<p style="font-size:12px; color:var(--text-muted);">Histórico vazio.</p>';
         document.getElementById('modal-historico').style.display = 'flex';
@@ -489,7 +572,7 @@
         let tot = 0;
         l.forEach(x => {
             tot += x.valorMeu || 0;
-            txt += `${formatarData(x.data)} - ${x.cliente} (${x.ser}): R$ ${(x.valorMeu||0).toFixed(2)}\n`;
+            txt += `${formatarData(x.data)} - ${x.cliente} [Kite: ${x.kite||'N/A'}] (${x.ser}): R$ ${(x.valorMeu||0).toFixed(2)}\n`;
         });
         txt += `\n*TOTAL: R$ ${tot.toFixed(2)}*`;
         document.getElementById('conteudo-comprovante').innerText = txt;
