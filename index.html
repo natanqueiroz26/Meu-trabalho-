@@ -191,12 +191,6 @@
             color: var(--text-dark);
         }
 
-        .btn-swipe-action img {
-            width: 24px;
-            height: 24px;
-            object-fit: contain;
-        }
-
         .card-registro { 
             background: white; 
             padding: 16px; 
@@ -600,14 +594,25 @@
             return `
             <div class="card-wrapper" id="wrapper-${i}">
                 <div class="actions-right">
-                    <button class="btn-swipe-action" title="Enviar WhatsApp" onclick="enviarWhatsAppCliente(${i})">
-                        <img src="imagens/whatsapp.png" alt="WhatsApp" onerror="this.outerHTML='💬'">
+                    <!-- Botão WhatsApp -->
+                    <button class="btn-swipe-action" style="color:#22c55e;" title="Enviar WhatsApp" onclick="enviarWhatsAppCliente(${i})">
+                        <i data-lucide="message-circle" size="20"></i>
                     </button>
-                    <button class="btn-swipe-action" style="color:${x.pago?'#16a34a':'#333'};" onclick="alternarPago(${i})">
-                        ${x.pago ? '<i data-lucide="check-circle-2" size="16"></i> Pago' : '<i data-lucide="clock" size="16"></i> Pagar'}
+
+                    <!-- Botão Alternar Pago (Seta / Check) -->
+                    <button class="btn-swipe-action" style="color:${x.pago ? '#16a34a' : '#eab308'};" title="Alterar Pagamento" onclick="alternarPago(${i})">
+                        <i data-lucide="${x.pago ? 'check-circle-2' : 'arrow-right-left'}" size="20"></i>
                     </button>
-                    <button class="btn-swipe-action" onclick="editar(${i})"><i data-lucide="pencil" size="16"></i></button>
-                    <button class="btn-swipe-action" style="color:#ef4444;" onclick="deletar(${i})"><i data-lucide="trash-2" size="16"></i></button>
+
+                    <!-- Botão Editar (Lápis) -->
+                    <button class="btn-swipe-action" style="color:#3b82f6;" title="Editar" onclick="editar(${i})">
+                        <i data-lucide="pencil" size="20"></i>
+                    </button>
+
+                    <!-- Botão Excluir (Lixeira) -->
+                    <button class="btn-swipe-action" style="color:#ef4444;" title="Excluir" onclick="deletar(${i})">
+                        <i data-lucide="trash-2" size="20"></i>
+                    </button>
                 </div>
 
                 <div class="card-registro" id="card-${i}">
