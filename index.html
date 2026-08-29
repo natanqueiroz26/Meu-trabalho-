@@ -9,6 +9,9 @@
     <link rel="apple-touch-icon" href="Icon.png.png">
     <meta name="theme-color" content="#f8fafc">
 
+    <!-- Biblioteca Lucide Icons para ícones profissionais -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
     <style>
         :root { 
             --bg: #f8fafc;
@@ -49,7 +52,7 @@
             letter-spacing: 1.5px;
         }
         .header-brand img { width: 28px; height: 28px; object-fit: contain; }
-        .btn-gear { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-muted); }
+        .btn-gear { background: none; border: none; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; }
 
         .card-resumo { 
             background: var(--card-dark); 
@@ -72,7 +75,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            color: white;
             cursor: pointer;
         }
         .card-resumo .label-saldo { 
@@ -110,7 +113,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 8px;
         }
 
         .grid-botoes-acao { display: flex; gap: 10px; margin-bottom: 20px; }
@@ -126,6 +129,10 @@
             color: var(--text-dark); 
             cursor: pointer;
             box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
         .btn-baixa { 
             flex: 1; 
@@ -139,9 +146,13 @@
             color: white; 
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(88, 101, 242, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
 
-        /* Estrutura do Card Deslizável (Swipe apenas para esquerda) */
+        /* Estrutura do Card Deslizável */
         .card-wrapper {
             position: relative;
             margin-bottom: 12px;
@@ -167,20 +178,22 @@
             background: rgba(255,255,255,0.95);
             border-radius: 12px;
             padding: 6px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: bold;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            gap: 4px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             min-width: 40px;
             height: 40px;
+            color: var(--text-dark);
         }
 
         .btn-swipe-action img {
-            width: 26px;
-            height: 26px;
+            width: 24px;
+            height: 24px;
             object-fit: contain;
         }
 
@@ -198,18 +211,25 @@
         }
 
         .info-esq { display: flex; flex-direction: column; gap: 4px; }
-        .data-linha { font-size: 10px; color: var(--text-muted); font-weight: 600; display: flex; align-items: center; gap: 4px; }
-        .nome-linha { font-size: 15px; font-weight: 800; color: var(--text-dark); display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+        .data-linha, .nome-linha, .kite-linha, .servico-linha {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .data-linha { font-size: 10px; color: var(--text-muted); font-weight: 600; }
+        .nome-linha { font-size: 15px; font-weight: 800; color: var(--text-dark); margin-top: 2px; }
         .kite-linha { font-size: 12px; font-weight: 700; color: var(--accent-purple); }
-        .servico-linha { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+        .servico-linha { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
         
         .badge-pago {
-            display: inline-block;
+            display: flex;
+            align-items: center;
+            gap: 4px;
             background: #dcfce7;
             color: #15803d;
             font-size: 10px;
             font-weight: 800;
-            padding: 2px 8px;
+            padding: 3px 8px;
             border-radius: 6px;
             margin-top: 4px;
             width: fit-content;
@@ -238,11 +258,11 @@
         <img src="Icon.png.png" alt="Logo" onerror="this.style.display='none'">
         <span>MEU TRABALHO</span>
     </div>
-    <button class="btn-gear" onclick="abrirConfig()">⚙️</button>
+    <button class="btn-gear" onclick="abrirConfig()"><i data-lucide="settings" size="22"></i></button>
 </header>
 
 <div class="card-resumo">
-    <button class="btn-relatorio-top" onclick="gerarRelatorio()" title="Gerar Relatório">📥</button>
+    <button class="btn-relatorio-top" onclick="gerarRelatorio()" title="Gerar Relatório"><i data-lucide="download" size="18"></i></button>
     <span class="label-saldo">SALDO REPAROS</span>
     <h1 class="valor-saldo" id="val-saldo-topo">R$ 0,00</h1>
     <div class="divisoria"></div>
@@ -258,11 +278,13 @@
     </div>
 </div>
 
-<button class="btn-historico-completo" onclick="abrirHistorico()">📦 HISTÓRICO COMPLETO</button>
+<button class="btn-historico-completo" onclick="abrirHistorico()">
+    <i data-lucide="archive" size="16"></i> HISTÓRICO COMPLETO
+</button>
 
 <div class="grid-botoes-acao">
-    <button class="btn-add" onclick="abrirForm()">+ ADICIONAR</button>
-    <button class="btn-baixa" onclick="fecharMes()">BAIXA GERAL</button>
+    <button class="btn-add" onclick="abrirForm()"><i data-lucide="plus" size="16"></i> ADICIONAR</button>
+    <button class="btn-baixa" onclick="fecharMes()"><i data-lucide="check-check" size="16"></i> BAIXA GERAL</button>
 </div>
 
 <!-- Form de Inclusão -->
@@ -288,8 +310,8 @@
             </div>
         </div>
 
-        <button type="button" onclick="incluirItemNaLista()" style="width:100%; margin-top:8px; background:var(--accent-purple); color:white; border:none; padding:8px; border-radius:8px; font-weight:bold; font-size:12px; cursor:pointer;">
-            + Incluir este Reparo
+        <button type="button" onclick="incluirItemNaLista()" style="width:100%; margin-top:8px; background:var(--accent-purple); color:white; border:none; padding:10px; border-radius:8px; font-weight:bold; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+            <i data-lucide="plus-circle" size="16"></i> Incluir este Reparo
         </button>
     </div>
 
@@ -315,7 +337,7 @@
 <!-- Modal Histórico -->
 <div id="modal-historico">
     <div class="modal-body">
-        <h3 style="margin-top:0;">📜 Histórico Encerrado</h3>
+        <h3 style="margin-top:0; display:flex; align-items:center; gap:8px;"><i data-lucide="history"></i> Histórico Encerrado</h3>
         <div id="conteudo-historico"></div>
         <button onclick="fecharHistorico()" style="width:100%; padding:12px; background:#e2e8f0; border:none; border-radius:12px; font-weight:bold; margin-top:15px; cursor:pointer;">Fechar</button>
     </div>
@@ -324,7 +346,7 @@
 <!-- Modal Configurações & Tabela de Preços -->
 <div id="modal-config">
     <div class="modal-body">
-        <h3 style="margin-top:0; text-align:center;">⚙️ Tabela de Reparos</h3>
+        <h3 style="margin-top:0; text-align:center; display:flex; align-items:center; justify-content:center; gap:8px;"><i data-lucide="sliders"></i> Tabela de Reparos</h3>
         
         <div style="background:#f8fafc; padding:12px; border-radius:12px; margin-bottom:15px; border:1px solid #e2e8f0;">
             <label style="margin-top:0;">Nome da Reparação</label>
@@ -350,9 +372,9 @@
 <!-- Modal Relatório -->
 <div id="modal-comprovante">
     <div class="modal-body">
-        <h3 style="margin-top:0;">📄 Relatório</h3>
+        <h3 style="margin-top:0; display:flex; align-items:center; gap:8px;"><i data-lucide="file-text"></i> Relatório</h3>
         <div id="conteudo-comprovante" style="white-space: pre-wrap; font-size:12px; background:#f1f5f9; padding:10px; border-radius:10px;"></div>
-        <button id="btn-wpp" style="width:100%; background:#22c55e; color:white; border:none; padding:14px; border-radius:12px; font-weight:bold; margin-top:15px; cursor:pointer;">ENVIAR WHATSAPP</button>
+        <button id="btn-wpp" style="width:100%; background:#22c55e; color:white; border:none; padding:14px; border-radius:12px; font-weight:bold; margin-top:15px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">ENVIAR WHATSAPP</button>
         <button onclick="fecharComprovante()" style="width:100%; background:#e2e8f0; border:none; padding:12px; border-radius:12px; font-weight:bold; margin-top:8px; cursor:pointer;">FECHAR</button>
     </div>
 </div>
@@ -436,12 +458,13 @@
                 return `
                     <div class="item-adicionado">
                         <span><b>${item.qtd}x</b> ${item.nome}</span>
-                        <span>R$ ${item.subtotal.toFixed(2)} 
-                            <button onclick="removerItemTemp(${idx})" style="border:none; background:none; color:red; font-weight:bold; cursor:pointer; margin-left:5px;">✕</button>
+                        <span style="display:flex; align-items:center; gap:5px;">R$ ${item.subtotal.toFixed(2)} 
+                            <button onclick="removerItemTemp(${idx})" style="border:none; background:none; color:red; cursor:pointer;"><i data-lucide="x" size="14"></i></button>
                         </span>
                     </div>
                 `;
             }).join('');
+            lucide.createIcons();
         }
 
         document.getElementById('f-bru').value = totalBruto.toFixed(2);
@@ -578,22 +601,22 @@
             <div class="card-wrapper" id="wrapper-${i}">
                 <div class="actions-right">
                     <button class="btn-swipe-action" title="Enviar WhatsApp" onclick="enviarWhatsAppCliente(${i})">
-                        <img src="imagens/whatsapp.png" alt="Ícone do WhatsApp">
+                        <img src="imagens/whatsapp.png" alt="WhatsApp" onerror="this.outerHTML='💬'">
                     </button>
-                    <button class="btn-swipe-action" style="color:${x.pago?'green':'#333'};" onclick="alternarPago(${i})">
-                        ${x.pago ? '✅ Pago' : '⏳ Pagar'}
+                    <button class="btn-swipe-action" style="color:${x.pago?'#16a34a':'#333'};" onclick="alternarPago(${i})">
+                        ${x.pago ? '<i data-lucide="check-circle-2" size="16"></i> Pago' : '<i data-lucide="clock" size="16"></i> Pagar'}
                     </button>
-                    <button class="btn-swipe-action" onclick="editar(${i})">✏️</button>
-                    <button class="btn-swipe-action" style="color:red;" onclick="deletar(${i})">🗑️</button>
+                    <button class="btn-swipe-action" onclick="editar(${i})"><i data-lucide="pencil" size="16"></i></button>
+                    <button class="btn-swipe-action" style="color:#ef4444;" onclick="deletar(${i})"><i data-lucide="trash-2" size="16"></i></button>
                 </div>
 
                 <div class="card-registro" id="card-${i}">
                     <div class="info-esq">
-                        <span class="data-linha">📅 ${formatarData(x.data)}</span>
-                        <span class="nome-linha">👤 ${x.cliente}</span>
-                        ${x.kite ? `<span class="kite-linha">🪁 ${x.kite}</span>` : ''}
-                        <span class="servico-linha">🛠️ ${x.ser}</span>
-                        ${x.pago ? `<span class="badge-pago">✓ PAGO</span>` : ''}
+                        <span class="data-linha"><i data-lucide="calendar" size="12"></i> ${formatarData(x.data)}</span>
+                        <span class="nome-linha"><i data-lucide="user" size="14"></i> ${x.cliente}</span>
+                        ${x.kite ? `<span class="kite-linha"><i data-lucide="wind" size="13"></i> ${x.kite}</span>` : ''}
+                        <span class="servico-linha"><i data-lucide="wrench" size="13"></i> ${x.ser}</span>
+                        ${x.pago ? `<span class="badge-pago"><i data-lucide="check" size="12"></i> PAGO</span>` : ''}
                     </div>
                     <div class="valor-dir">
                         <span class="valor-verde">R$ ${(x.valorMeu || 0).toFixed(2)}</span>
@@ -609,6 +632,7 @@
         document.getElementById('val-bruto-topo').innerText = `R$ ${totalBruto.toFixed(2)}`;
         document.getElementById('val-gasto-topo').innerText = `R$ ${totalGasto.toFixed(2)}`;
 
+        lucide.createIcons();
         configurarGestosTouch();
     }
 
@@ -627,7 +651,6 @@
                 currentX = e.touches[0].clientX;
                 let diff = currentX - startX;
                 
-                // Só permite arrastar para a esquerda (diff negativo)
                 if(diff > 0) diff = 0;
                 if(diff < -220) diff = -220;
 
@@ -639,10 +662,8 @@
                 card.style.transition = 'transform 0.2s ease-out';
 
                 if (diff < -60) {
-                    // Mantém o menu aberto
                     card.style.transform = 'translateX(-210px)';
                 } else {
-                    // Volta ao normal
                     card.style.transform = 'translateX(0px)';
                 }
                 startX = 0;
@@ -656,9 +677,10 @@
         cont.innerHTML = db.tabelaPrecos.map((item, i) => `
             <div class="item-tabela-preco">
                 <span><b>${item.nome}</b> - R$ ${item.preco.toFixed(2)}</span>
-                <button onclick="removerTipoReparo(${i})" style="border:none; background:none; color:red; font-weight:bold; cursor:pointer;">✕</button>
+                <button onclick="removerTipoReparo(${i})" style="border:none; background:none; color:red; cursor:pointer;"><i data-lucide="trash-2" size="14"></i></button>
             </div>
         `).join('');
+        lucide.createIcons();
     }
 
     function adicionarNovoTipoReparo() {
