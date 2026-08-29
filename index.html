@@ -79,7 +79,7 @@
         nav { display: flex; background: white; overflow-x: auto; position: sticky; top: 0; z-index: 100; padding: 5px; gap: 5px; border-bottom: 1px solid #e2e8f0; scrollbar-width: none; }
         nav::-webkit-scrollbar { display: none; }
         
-        nav button { color: var(--secondary); border: none; padding: 12px 15px; background: none; flex: 1; font-size: 11px; font-weight: 700; white-space: nowrap; border-radius: 8px; transition: 0.3s; }
+        nav button { color: var(--secondary); border: none; padding: 12px 15px; background: none; flex: 1; font-size: 11px; font-weight: 700; white-space: nowrap; border-radius: 8px; transition: 0.3s; cursor: pointer; }
         nav button.active { color: white; background: var(--primary); }
 
         .container { padding: 15px; max-width: 500px; margin: auto; min-height: 80vh; }
@@ -95,7 +95,6 @@
         .bloco span { display: block; font-size: 9px; opacity: 0.5; margin-bottom: 4px; }
         .bloco b { font-size: 13px; color: #cbd5e1; }
 
-        /* Estrutura para deslizar o item */
         .item-wrapper {
             position: relative;
             margin-bottom: 10px;
@@ -108,7 +107,7 @@
             top: 0;
             bottom: 0;
             right: 0;
-            width: 150px;
+            width: 120px;
             display: flex;
             align-items: center;
             justify-content: space-evenly;
@@ -151,11 +150,11 @@
         .bt-acao { border: none; padding: 15px; border-radius: 14px; font-weight: 700; font-size: 12px; cursor: pointer; flex: 1; }
 
         .hist-box { margin-bottom: 20px; }
-        .bt-hist-toggle { width: 100%; padding: 12px; border: none; background: #e2e8f0; color: #475569; border-radius: 12px; font-size: 11px; font-weight: 800; }
+        .bt-hist-toggle { width: 100%; padding: 12px; border: none; background: #e2e8f0; color: #475569; border-radius: 12px; font-size: 11px; font-weight: 800; cursor: pointer; }
         .hist-lista { display: none; background: white; margin-top: 8px; padding: 15px; border-radius: 16px; border: 1px solid #e2e8f0; }
         
         .mes-hist-card { border: 1px solid #f1f5f9; border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
-        .mes-header { background: #f8fafc; padding: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 700; }
+        .mes-header { background: #f8fafc; padding: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 700; cursor: pointer; }
         .mes-detalhes { display: none; padding: 10px; background: white; border-top: 1px solid #f1f5f9; }
         .item-antigo { font-size: 11px; padding: 8px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; flex-direction: column; gap: 2px; }
 
@@ -166,10 +165,8 @@
         .tag-servico { background: #f1f5f9; padding: 8px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; display: flex; justify-content: space-between; margin-bottom: 6px; }
 
         #modal-meses, #comprovante, #modal-config { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.8); z-index:2000; justify-content:center; align-items:center; backdrop-filter: blur(4px); }
-        .lista-meses { background:white; width:85%; border-radius:24px; padding:20px; display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+        .lista-meses { background:white; width:85%; border-radius:24px; padding:20px; display:grid; grid-template-columns: 1fr 1fr; gap:10px; max-height: 70vh; overflow-y: auto; }
         
-        .bt-share { position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px 12px; border-radius: 12px; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-
         .card-config { background: white; width: 85%; max-width: 360px; border-radius: 24px; padding: 25px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         .card-config h3 { margin-top: 0; font-size: 16px; color: var(--primary); }
         .card-config p { font-size: 12px; color: var(--secondary); margin-bottom: 20px; line-height: 1.4; }
@@ -180,7 +177,7 @@
 
 <header>
     <div class="header-titulo">
-        <img src="Icon.png.png" alt="Kitesurf Icon">
+        <img src="Icon.png.png" alt="Kitesurf Icon" onerror="this.style.display='none'">
         <span>Meu Trabalho</span>
     </div>
     <button class="btn-config" onclick="abrirConfig()" title="Configurações e Backup">⚙️</button>
@@ -196,17 +193,16 @@
 
 <div class="container" id="conteudo"></div>
 
-<!-- Modal de Meses -->
-<div id="modal-meses"><div class="lista-meses" id="meses-grid"></div></div>
-
 <!-- Modal de Relatório -->
-<div id="comprovante" style="background:white; flex-direction:column; display:none;">
-    <div id="conteudo-comprovante" style="padding:30px; flex-grow:1; overflow-y:auto;"></div>
-    <button id="btn-wpp" style="background:#22c55e; color:white; border:none; padding:20px; font-weight:bold;">ENVIAR WHATSAPP</button>
-    <button onclick="this.parentElement.style.display='none'" style="background:#eee; border:none; padding:15px;">FECHAR</button>
+<div id="comprovante">
+    <div style="background:white; width:90%; max-width:450px; border-radius:24px; padding:20px; display:flex; flex-direction:column; max-height:85vh;">
+        <div id="conteudo-comprovante" style="padding:10px; flex-grow:1; overflow-y:auto;"></div>
+        <button id="btn-wpp" style="background:#22c55e; color:white; border:none; padding:15px; border-radius:12px; font-weight:bold; margin-top:10px; cursor:pointer;">ENVIAR WHATSAPP</button>
+        <button onclick="fecharComprovante()" style="background:#e2e8f0; color:#334155; border:none; padding:12px; border-radius:12px; margin-top:8px; font-weight:bold; cursor:pointer;">FECHAR</button>
+    </div>
 </div>
 
-<!-- Modal Elegante de Backup / Configurações -->
+<!-- Modal de Backup / Configurações -->
 <div id="modal-config">
     <div class="card-config animar">
         <h3>💾 Segurança dos Dados</h3>
@@ -233,27 +229,12 @@
         if (salvo) {
             try { return JSON.parse(salvo); } catch(e){}
         }
-
-        for (var i = 0; i < localStorage.length; i++) {
-            var k = localStorage.key(i);
-            try {
-                var d = JSON.parse(localStorage.getItem(k));
-                if (d && typeof d === 'object') {
-                    ['horas', 'reparos', 'assist', 'aulas', 'diaria'].forEach(aba => {
-                        if (Array.isArray(d[aba]) && d[aba].length > 0) base[aba] = base[aba].concat(d[aba]);
-                        if (Array.isArray(d['hist_' + aba]) && d['hist_' + aba].length > 0) base['hist_' + aba] = base['hist_' + aba].concat(d['hist_' + aba]);
-                    });
-                }
-            } catch(e){}
-        }
-
         return base;
     }
 
     var db = carregarBancoSeguro();
     localStorage.setItem(CHAVE_UNICA, JSON.stringify(db));
 
-    const abas = ['horas', 'reparos', 'assist', 'aulas', 'diaria'];
     var secaoAtual = 'horas';
     var listaServicosAdicionados = [];
     var indiceEdicao = -1;
@@ -274,9 +255,17 @@
         secaoAtual = nome;
         listaServicosAdicionados = [];
         indiceEdicao = -1;
+        
+        // Atualiza a classe ativa nos botões
         document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-        document.getElementById('btn-' + nome).classList.add('active');
-        document.getElementById('btn-' + nome).scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        var btnAtivo = document.getElementById('btn-' + nome);
+        if (btnAtivo) {
+            btnAtivo.classList.add('active');
+            try {
+                btnAtivo.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            } catch(e) {}
+        }
+        
         desenhar();
     }
 
@@ -285,6 +274,18 @@
     function ordenarPorData(lista) {
         if (!Array.isArray(lista)) return [];
         return lista.sort((a, b) => new Date(b.data || 0) - new Date(a.data || 0));
+    }
+
+    function abrirForm() {
+        let f = document.getElementById('form-adicionar');
+        if (f) f.style.display = 'block';
+    }
+
+    function fecharForm() {
+        let f = document.getElementById('form-adicionar');
+        if (f) f.style.display = 'none';
+        indiceEdicao = -1;
+        listaServicosAdicionados = [];
     }
 
     function adicionarServicoLista() {
@@ -318,7 +319,8 @@
 
     function atualizarCamposReparo() {
         let totalBruto = listaServicosAdicionados.reduce((sum, item) => sum + item.preco, 0);
-        document.getElementById('f-bru').value = totalBruto;
+        let fBru = document.getElementById('f-bru');
+        if (fBru) fBru.value = totalBruto;
         
         let containerLista = document.getElementById('lista-servicos-adicionados');
         if (containerLista) {
@@ -397,6 +399,23 @@
         desenhar();
     }
 
+    function editar(i) {
+        if(secaoAtual === 'reparos') {
+            editarReparo(i);
+            return;
+        }
+        let item = db[secaoAtual][i];
+        if (!item) return;
+
+        indiceEdicao = i;
+        abrirForm();
+
+        document.getElementById('f-d').value = item.data || '';
+        if(document.getElementById('f-q')) document.getElementById('f-q').value = item.qtd || '';
+        if(document.getElementById('f-aluno')) document.getElementById('f-aluno').value = item.aluno || '';
+        if(document.getElementById('f-vd')) document.getElementById('f-vd').value = item.valorMeu || 0;
+    }
+
     function editarReparo(i) {
         let item = db[secaoAtual][i];
         if (!item) return;
@@ -419,6 +438,14 @@
         document.getElementById('f-bru').value = item.bruto || 0;
     }
 
+    function deletar(i) {
+        if (confirm("Deseja realmente excluir este registro?")) {
+            db[secaoAtual].splice(i, 1);
+            localStorage.setItem(CHAVE_UNICA, JSON.stringify(db));
+            desenhar();
+        }
+    }
+
     function compartilharReparoIndividual(i) {
         let item = db['reparos'][i];
         if (!item) return;
@@ -435,8 +462,9 @@
 
     function calcularValorTempo(qtd, preco) {
         let v = parseFloat(qtd); if(!v) return 0;
-        if(qtd.includes('.')){
-            let [h, m] = qtd.split('.');
+        let str = qtd.toString();
+        if(str.includes('.')){
+            let [h, m] = str.split('.');
             if(m.length === 1) m *= 10;
             return (parseInt(h) + (parseInt(m)/60)) * preco;
         }
@@ -452,4 +480,282 @@
 
             db[secaoAtual].forEach((x, i) => {
                 totalMeu += (x.valorMeu || 0);
-                if(secaoAtual === 'reparos') { t
+                if(secaoAtual === 'reparos') { 
+                    tBru += (x.bruto || 0); 
+                    tGas += (x.gasto || 0); 
+                }
+
+                let titulo = '', detalhe = '';
+                if(secaoAtual === 'horas') {
+                    titulo = `${x.qtd} Horas Extra`;
+                } else if(secaoAtual === 'reparos') {
+                    titulo = x.cliente || 'Cliente Avulso';
+                    detalhe = `<span class="detalhe-item">${x.ser}</span>`;
+                } else if(secaoAtual === 'assist') {
+                    titulo = `${x.qtd} Assistência(s)`;
+                } else if(secaoAtual === 'aulas') {
+                    titulo = x.aluno ? `Aluno: ${x.aluno}` : 'Aula de Kitesurf';
+                    detalhe = `<span class="detalhe-item">${x.qtd} Horas de Aula</span>`;
+                } else if(secaoAtual === 'diaria') {
+                    titulo = 'Diária de Trabalho';
+                }
+
+                listaHtml += `
+                <div class="item-wrapper">
+                    <div class="item-acoes-fundo">
+                        ${secaoAtual === 'reparos' ? `<button class="btn-swipe-acao" onclick="compartilharReparoIndividual(${i})" title="Enviar comprovante">📲</button>` : ''}
+                        <button class="btn-swipe-acao" onclick="editar(${i})" title="Editar">✏️</button>
+                        <button class="btn-swipe-acao" onclick="deletar(${i})" title="Excluir">🗑️</button>
+                    </div>
+                    <div class="item animar">
+                        <div class="info-principal">
+                            <span class="data-tag">${formatarDataBR(x.data)}</span>
+                            <b>${titulo}</b>
+                            ${detalhe}
+                        </div>
+                        <div class="valor-item">
+                            R$ ${(x.valorMeu || 0).toFixed(2)}
+                            ${secaoAtual === 'reparos' ? `<span class="sub-valor">Bruto: R$ ${(x.bruto||0).toFixed(2)}</span>` : ''}
+                        </div>
+                    </div>
+                </div>`;
+            });
+        }
+
+        let tituloAba = {
+            horas: 'Hora Extra (R$10/h)',
+            reparos: 'Reparos e Manutenção',
+            assist: 'Assistência (R$50/un)',
+            aulas: 'Aulas de Kitesurf (R$100/h)',
+            diaria: 'Diária de Trabalho'
+        }[secaoAtual];
+
+        let painelDetalhes = '';
+        if(secaoAtual === 'reparos') {
+            painelDetalhes = `
+            <div class="painel-detalhado">
+                <div class="bloco"><span>TOTAL BRUTO</span><b>R$ ${tBru.toFixed(2)}</b></div>
+                <div class="bloco"><span>GASTOS</span><b>R$ ${tGas.toFixed(2)}</b></div>
+                <div class="bloco"><span>MEU LUCRO</span><b>R$ ${totalMeu.toFixed(2)}</b></div>
+            </div>`;
+        }
+
+        let formHtml = `
+        <div class="caixa-form animar" id="form-adicionar">
+            <label>Data</label>
+            <input type="date" id="f-d" value="${new Date().toISOString().split('T')[0]}">
+
+            ${secaoAtual === 'reparos' ? `
+                <label>Nome do Cliente</label>
+                <input type="text" id="f-cli" placeholder="Ex: João Silva">
+                
+                <label>Selecionar Serviço</label>
+                <select id="f-sel-ser" onchange="aoMudarSeletorServico()">
+                    <option value="">-- Escolha um serviço --</option>
+                    ${tabelaPrecos.map((p, idx) => `<option value="${idx}">${p.nome} - R$ ${p.preco}</option>`).join('')}
+                    <option value="custom">+ Outro serviço avulso</option>
+                </select>
+
+                <div id="box-qtd" style="display:none;">
+                    <label>Quantidade</label>
+                    <input type="number" id="f-qtd-ser" value="1" min="1">
+                    <button type="button" onclick="adicionarServicoLista()" style="width:100%; padding:8px; background:var(--primary); color:white; border:none; border-radius:8px; margin-bottom:12px; font-weight:bold;">Adicionar à Lista</button>
+                </div>
+
+                <div id="box-custom" style="display:none;">
+                    <label>Nome do Serviço Avulso</label>
+                    <input type="text" id="f-ser-custom" placeholder="Ex: Conserto de zíper">
+                    <label>Valor (R$)</label>
+                    <input type="number" id="f-bru-custom" placeholder="0.00">
+                    <button type="button" onclick="adicionarServicoLista()" style="width:100%; padding:8px; background:var(--primary); color:white; border:none; border-radius:8px; margin-bottom:12px; font-weight:bold;">Adicionar à Lista</button>
+                </div>
+
+                <div id="lista-servicos-adicionados"></div>
+
+                <label>Valor Total Bruto (R$)</label>
+                <input type="number" id="f-bru" placeholder="0.00">
+                
+                <label>Gastos / Material (R$)</label>
+                <input type="number" id="f-gas" placeholder="0.00">
+            ` : ''}
+
+            ${secaoAtual === 'diaria' ? `
+                <label>Valor da Diária (R$)</label>
+                <input type="number" id="f-vd" placeholder="0.00">
+            ` : ''}
+
+            ${(secaoAtual === 'horas' || secaoAtual === 'assist' || secaoAtual === 'aulas') ? `
+                <label>${secaoAtual === 'horas' ? 'Horas Trabalhadas' : (secaoAtual === 'assist' ? 'Quantidade' : 'Horas de Aula')}</label>
+                <input type="number" step="0.1" id="f-q" placeholder="Ex: 1.5">
+            ` : ''}
+
+            ${secaoAtual === 'aulas' ? `
+                <label>Nome do Aluno</label>
+                <input type="text" id="f-aluno" placeholder="Ex: Maria">
+            ` : ''}
+
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button onclick="salvar()" style="flex:1; background:var(--accent); color:white; border:none; padding:12px; border-radius:10px; font-weight:bold; cursor:pointer;">Salvar</button>
+                <button onclick="fecharForm()" style="flex:1; background:#e2e8f0; color:#334155; border:none; padding:12px; border-radius:10px; font-weight:bold; cursor:pointer;">Cancelar</button>
+            </div>
+        </div>`;
+
+        let historicoHtml = `
+        <div class="hist-box">
+            <button class="bt-hist-toggle" onclick="alternarHistorico()">📜 HISTÓRICO DE MESES ANTERIORES</button>
+            <div class="hist-lista" id="painel-historico">
+                ${gerarHtmlHistorico()}
+            </div>
+        </div>`;
+
+        container.innerHTML = `
+            <div class="topo">
+                <small>${tituloAba}</small>
+                <h1>R$ ${totalMeu.toFixed(2)}</h1>
+                ${painelDetalhes}
+            </div>
+
+            <div class="area-acoes">
+                <button class="bt-acao" style="background:var(--primary); color:white;" onclick="abrirForm()">+ NOVO REGISTRO</button>
+                <button class="bt-acao" style="background:var(--accent); color:white;" onclick="gerarRelatorio()">📄 RELATÓRIO</button>
+                <button class="bt-acao" style="background:var(--history); color:white;" onclick="fecharMes()">🔒 FECHAR MÊS</button>
+            </div>
+
+            ${formHtml}
+            ${historicoHtml}
+
+            <div>
+                ${listaHtml || '<p style="text-align:center; color:var(--secondary); font-size:13px; margin-top:30px;">Nenhum registro cadastrado este mês.</p>'}
+            </div>
+        `;
+    }
+
+    function alternarHistorico() {
+        let p = document.getElementById('painel-historico');
+        if(p) p.style.display = p.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function gerarHtmlHistorico() {
+        let histKey = 'hist_' + secaoAtual;
+        let hist = db[histKey] || [];
+        if (hist.length === 0) return '<p style="font-size:12px; color:var(--secondary); margin:0;">Nenhum histórico encerrado.</p>';
+
+        let agrupado = {};
+        hist.forEach(item => {
+            let mesAno = item.mesAno || 'Anteriores';
+            if (!agrupado[mesAno]) agrupado[mesAno] = { total: 0, itens: [] };
+            agrupado[mesAno].total += (item.valorMeu || 0);
+            agrupado[mesAno].itens.push(item);
+        });
+
+        return Object.keys(agrupado).map(mes => `
+            <div class="mes-hist-card">
+                <div class="mes-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'">
+                    <span>📅 ${mes}</span>
+                    <b>R$ ${agrupado[mes].total.toFixed(2)}</b>
+                </div>
+                <div class="mes-detalhes">
+                    ${agrupado[mes].itens.map(it => `
+                        <div class="item-antigo">
+                            <span><b>${formatarDataBR(it.data)}</b> - ${it.cliente || it.aluno || it.ser || 'Registro'}</span>
+                            <span style="color:var(--accent); font-weight:bold;">R$ ${(it.valorMeu||0).toFixed(2)}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function fecharMes() {
+        if (db[secaoAtual].length === 0) return alert("Não há registros no mês atual para fechar.");
+        
+        let mesAno = prompt("Informe o Mês/Ano de encerramento (Ex: 08/2026):", new Date().toLocaleDateString('pt-BR', {month: '2-digit', year: 'numeric'}));
+        if (!mesAno) return;
+
+        let histKey = 'hist_' + secaoAtual;
+        db[secaoAtual].forEach(item => {
+            item.mesAno = mesAno;
+            db[histKey].push(item);
+        });
+
+        db[secaoAtual] = [];
+        localStorage.setItem(CHAVE_UNICA, JSON.stringify(db));
+        alert(`Mês ${mesAno} encerrado e movido para o histórico com sucesso!`);
+        desenhar();
+    }
+
+    function gerarRelatorio() {
+        let total = 0;
+        let lista = db[secaoAtual] || [];
+        if(lista.length === 0) return alert("Sem registros para gerar relatório.");
+
+        let textoFormatado = `*RELATÓRIO - ${secaoAtual.toUpperCase()}*\n\n`;
+
+        lista.forEach(x => {
+            total += (x.valorMeu || 0);
+            textoFormatado += `📅 *${formatarDataBR(x.data)}*\n`;
+            if(x.cliente) textoFormatado += `👤 Cliente: ${x.cliente}\n`;
+            if(x.aluno) textoFormatado += `👤 Aluno: ${x.aluno}\n`;
+            if(x.ser) textoFormatado += `🔧 Serviço: ${x.ser}\n`;
+            if(x.qtd) textoFormatado += `⏱️ Qtd/Horas: ${x.qtd}\n`;
+            textoFormatado += `💰 Valor: R$ ${(x.valorMeu || 0).toFixed(2)}\n------------------------\n`;
+        });
+
+        textoFormatado += `\n*TOTAL ACUMULADO: R$ ${total.toFixed(2)}*`;
+
+        document.getElementById('conteudo-comprovante').innerText = textoFormatado;
+        document.getElementById('comprovante').style.display = 'flex';
+        
+        document.getElementById('btn-wpp').onclick = function() {
+            window.location.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(textoFormatado)}`;
+        };
+    }
+
+    function fecharComprovante() {
+        document.getElementById('comprovante').style.display = 'none';
+    }
+
+    function abrirConfig() {
+        document.getElementById('modal-config').style.display = 'flex';
+    }
+
+    function fecharConfig() {
+        document.getElementById('modal-config').style.display = 'none';
+    }
+
+    function exportarBackup() {
+        let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
+        let downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `backup_kitesurf_${new Date().toISOString().split('T')[0]}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    }
+
+    function importarBackup(event) {
+        let reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                let importedDb = JSON.parse(e.target.result);
+                if(importedDb && typeof importedDb === 'object') {
+                    db = importedDb;
+                    localStorage.setItem(CHAVE_UNICA, JSON.stringify(db));
+                    alert("Backup restaurado com sucesso!");
+                    fecharConfig();
+                    desenhar();
+                } else {
+                    alert("Arquivo de backup inválido.");
+                }
+            } catch(err) {
+                alert("Erro ao ler o arquivo de backup.");
+            }
+        };
+        reader.readAsText(event.target.files[0]);
+    }
+
+    // Inicialização do aplicativo
+    desenhar();
+</script>
+</body>
+</html>
