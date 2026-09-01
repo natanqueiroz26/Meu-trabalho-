@@ -1,766 +1,100 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MEU TRABALHO - REPARAÇÃO</title>
-
-    <link rel="icon" type="image/png" href="Icon.png.png">
-    <link rel="apple-touch-icon" href="Icon.png.png">
-    <meta name="theme-color" content="#f8fafc">
-
-    <!-- Biblioteca Lucide Icons para ícones profissionais -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-
-    <style>
-        :root { 
-            --bg: #f8fafc;
-            --card-dark: #121826;
-            --card-light: #ffffff;
-            --text-dark: #0f172a;
-            --text-muted: #64748b;
-            --accent-green: #10b981;
-            --accent-purple: #5865f2;
-            --border-color: #e2e8f0;
-        }
-
-        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        
-        body { 
-            margin: 0; 
-            background: var(--bg); 
-            color: var(--text-dark); 
-            padding: 15px; 
-            max-width: 480px; 
-            margin: 0 auto;
-            padding-bottom: 40px;
-            overflow-x: hidden;
-        }
-
-        header { 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            padding: 10px 5px 20px 5px;
-        }
-        .header-brand { 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            font-weight: 800; 
-            font-size: 15px; 
-            letter-spacing: 1.5px;
-        }
-        .header-brand img { width: 28px; height: 28px; object-fit: contain; }
-        .btn-gear { background: none; border: none; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; }
-
-        .card-resumo { 
-            background: var(--card-dark); 
-            color: white; 
-            border-radius: 28px; 
-            padding: 24px 20px 20px 20px; 
-            position: relative; 
-            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
-            margin-bottom: 15px;
-        }
-        .btn-relatorio-top {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: #232d42;
-            border: none;
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            cursor: pointer;
-        }
-        .card-resumo .label-saldo { 
-            font-size: 10px; 
-            font-weight: 700; 
-            letter-spacing: 1.5px; 
-            color: #94a3b8; 
-            text-align: center; 
-            display: block; 
-            margin-bottom: 5px;
-        }
-        .card-resumo .valor-saldo { 
-            font-size: 34px; 
-            font-weight: 800; 
-            text-align: center; 
-            margin: 0 0 20px 0;
-        }
-        .divisoria { border-top: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; }
-        .grid-detalhes { display: flex; justify-content: space-around; text-align: center; }
-        .item-detalhe span { display: block; font-size: 9px; font-weight: 700; color: #94a3b8; letter-spacing: 0.5px; margin-bottom: 4px; }
-        .item-detalhe b { font-size: 14px; color: white; font-weight: 700; }
-
-        .btn-historico-completo { 
-            width: 100%; 
-            background: #e2e8f0; 
-            border: none; 
-            padding: 12px; 
-            border-radius: 14px; 
-            font-size: 11px; 
-            font-weight: 800; 
-            color: #475569; 
-            letter-spacing: 0.5px; 
-            cursor: pointer; 
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .grid-botoes-acao { display: flex; gap: 10px; margin-bottom: 20px; }
-        .btn-add { 
-            flex: 1; 
-            background: white; 
-            border: 1px solid var(--border-color); 
-            padding: 14px; 
-            border-radius: 14px; 
-            font-weight: 800; 
-            font-size: 12px; 
-            letter-spacing: 0.5px; 
-            color: var(--text-dark); 
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-        .btn-baixa { 
-            flex: 1; 
-            background: var(--accent-purple); 
-            border: none; 
-            padding: 14px; 
-            border-radius: 14px; 
-            font-weight: 800; 
-            font-size: 12px; 
-            letter-spacing: 0.5px; 
-            color: white; 
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(88, 101, 242, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-
-        /* Estrutura do Card Deslizável */
-        .card-wrapper {
-            position: relative;
-            margin-bottom: 12px;
-            border-radius: 18px;
-            overflow: hidden;
-            background: #cbd5e1;
-        }
-
-        .actions-right {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            right: 0;
-            display: flex;
-            align-items: center;
-            padding: 0 10px;
-            gap: 6px;
-            justify-content: flex-end;
-        }
-
-        .btn-swipe-action {
-            border: none;
-            background: rgba(255,255,255,0.95);
-            border-radius: 12px;
-            padding: 6px;
-            font-size: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            min-width: 40px;
-            height: 40px;
-            color: var(--text-dark);
-        }
-
-        .card-registro { 
-            background: white; 
-            padding: 16px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: flex-start; 
-            position: relative;
-            z-index: 2;
-            transition: transform 0.2s ease-out;
-            touch-action: pan-y;
-            border-radius: 18px;
-        }
-
-        .info-esq { display: flex; flex-direction: column; gap: 4px; }
-        .data-linha, .nome-linha, .kite-linha, .servico-linha {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .data-linha { font-size: 10px; color: var(--text-muted); font-weight: 600; }
-        .nome-linha { font-size: 15px; font-weight: 800; color: var(--text-dark); margin-top: 2px; }
-        .kite-linha { font-size: 12px; font-weight: 700; color: var(--accent-purple); }
-        .servico-linha { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-        
-        .badge-pago {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            background: #dcfce7;
-            color: #15803d;
-            font-size: 10px;
-            font-weight: 800;
-            padding: 3px 8px;
-            border-radius: 6px;
-            margin-top: 4px;
-            width: fit-content;
-        }
-
-        .valor-dir { text-align: right; }
-        .valor-verde { font-size: 15px; font-weight: 800; color: var(--accent-green); }
-        .bruto-sub { font-size: 10px; color: var(--text-muted); display: block; margin-top: 2px; }
-
-        .caixa-form { background: white; padding: 20px; border-radius: 20px; margin-bottom: 20px; border: 1px solid var(--border-color); display: none; }
-        label { display: block; margin-bottom: 5px; font-size: 10px; font-weight: 800; color: var(--text-muted); letter-spacing: 0.5px; }
-        input, select { width: 100%; box-sizing: border-box; padding: 12px; margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 14px; outline: none; background: #fff; }
-
-        .box-itens-adicionados { background: #f8fafc; border: 1px dashed var(--border-color); padding: 10px; border-radius: 10px; margin-bottom: 12px; }
-        .item-adicionado { display: flex; justify-content: space-between; align-items: center; font-size: 12px; padding: 4px 0; border-bottom: 1px solid #edf2f7; }
-
-        #modal-historico, #modal-config, #modal-comprovante { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); z-index:1000; justify-content:center; align-items:center; backdrop-filter: blur(4px); }
-        .modal-body { background:white; width:90%; max-width:400px; border-radius:24px; padding:20px; max-height:80vh; overflow-y:auto; }
-        .item-tabela-preco { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
-    </style>
-</head>
-<body>
-
-<header>
-    <div class="header-brand">
-        <img src="Icon.png.png" alt="Logo" onerror="this.style.display='none'">
-        <span>MEU TRABALHO</span>
-    </div>
-    <button class="btn-gear" onclick="abrirConfig()"><i data-lucide="settings" size="22"></i></button>
-</header>
-
-<div class="card-resumo">
-    <button class="btn-relatorio-top" onclick="gerarRelatorio()" title="Gerar Relatório"><i data-lucide="download" size="18"></i></button>
-    <span class="label-saldo">SALDO REPAROS</span>
-    <h1 class="valor-saldo" id="val-saldo-topo">R$ 0,00</h1>
-    <div class="divisoria"></div>
-    <div class="grid-detalhes">
-        <div class="item-detalhe">
-            <span>BRUTO TOTAL</span>
-            <b id="val-bruto-topo">R$ 0.00</b>
-        </div>
-        <div class="item-detalhe">
-            <span>GASTO PEÇAS</span>
-            <b id="val-gasto-topo">R$ 0.00</b>
-        </div>
-    </div>
-</div>
-
-<button class="btn-historico-completo" onclick="abrirHistorico()">
-    <i data-lucide="archive" size="16"></i> HISTÓRICO COMPLETO
-</button>
-
-<div class="grid-botoes-acao">
-    <button class="btn-add" onclick="abrirForm()"><i data-lucide="plus" size="16"></i> ADICIONAR</button>
-    <button class="btn-baixa" onclick="fecharMes()"><i data-lucide="check-check" size="16"></i> BAIXA GERAL</button>
-</div>
-
-<!-- Form de Inclusão -->
-<div class="caixa-form" id="form-adicionar">
-    <label>Data</label>
-    <input type="date" id="f-d">
-
-    <label>Nome do Cliente</label>
-    <input type="text" id="f-cli" placeholder="Ex: João Silva">
-
-    <label>Nome do Kite</label>
-    <input type="text" id="f-kite" placeholder="Ex: Core XR7 10m / Duotone Rebel">
-
-    <div style="background:#f1f5f9; padding:12px; border-radius:12px; margin-bottom:12px;">
-        <label style="color:var(--accent-purple);">SELECIONAR REPARAÇÕES</label>
-        
-        <div style="display:flex; gap:8px;">
-            <div style="flex:2;">
-                <select id="f-sel-rep" style="margin-bottom:0;"></select>
-            </div>
-            <div style="flex:1;">
-                <select id="f-qtd" style="margin-bottom:0;"></select>
-            </div>
-        </div>
-
-        <button type="button" onclick="incluirItemNaLista()" style="width:100%; margin-top:8px; background:var(--accent-purple); color:white; border:none; padding:10px; border-radius:8px; font-weight:bold; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
-            <i data-lucide="plus-circle" size="16"></i> Incluir este Reparo
-        </button>
-    </div>
-
-    <label>Reparos Incluídos:</label>
-    <div class="box-itens-adicionados" id="lista-itens-temp">
-        <p style="font-size:11px; color:var(--text-muted); margin:0; text-align:center;">Nenhum reparo incluído ainda.</p>
-    </div>
-
-    <label>Valor Total Calculado (R$)</label>
-    <input type="number" step="0.01" id="f-bru" value="0.00">
-
-    <label>Gasto com Peças (R$)</label>
-    <input type="number" step="0.01" id="f-gas" value="0" placeholder="0.00">
-
-    <div style="display:flex; gap:10px; margin-top:10px;">
-        <button onclick="salvar()" style="flex:1; background:var(--card-dark); color:white; border:none; padding:12px; border-radius:10px; font-weight:bold; cursor:pointer;">Salvar</button>
-        <button onclick="fecharForm()" style="flex:1; background:#e2e8f0; color:#334155; border:none; padding:12px; border-radius:10px; font-weight:bold; cursor:pointer;">Cancelar</button>
-    </div>
-</div>
-
-<div id="lista-cards"></div>
-
-<!-- Modal Histórico -->
-<div id="modal-historico">
-    <div class="modal-body">
-        <h3 style="margin-top:0; display:flex; align-items:center; gap:8px;"><i data-lucide="history"></i> Histórico Encerrado</h3>
-        <div id="conteudo-historico"></div>
-        <button onclick="fecharHistorico()" style="width:100%; padding:12px; background:#e2e8f0; border:none; border-radius:12px; font-weight:bold; margin-top:15px; cursor:pointer;">Fechar</button>
-    </div>
-</div>
-
-<!-- Modal Configurações & Tabela de Preços -->
-<div id="modal-config">
-    <div class="modal-body">
-        <h3 style="margin-top:0; text-align:center; display:flex; align-items:center; justify-content:center; gap:8px;"><i data-lucide="sliders"></i> Tabela de Reparos</h3>
-        
-        <div style="background:#f8fafc; padding:12px; border-radius:12px; margin-bottom:15px; border:1px solid #e2e8f0;">
-            <label style="margin-top:0;">Nome da Reparação</label>
-            <input type="text" id="cfg-nome" placeholder="Ex: Rasgo">
-            <label>Preço Unitário (R$)</label>
-            <input type="number" step="0.01" id="cfg-preco" placeholder="50.00">
-            <button onclick="adicionarNovoTipoReparo()" style="width:100%; padding:10px; background:var(--accent-purple); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">+ Cadastrar Reparo</button>
-        </div>
-
-        <label>Reparos Cadastrados:</label>
-        <div id="lista-tabela-precos" style="max-height:180px; overflow-y:auto; margin-bottom:15px;"></div>
-
-        <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
-
-        <button onclick="exportarBackup()" style="width:100%; padding:10px; background:var(--card-dark); color:white; border:none; border-radius:10px; font-weight:bold; margin-bottom:8px; cursor:pointer;">BAIXAR BACKUP</button>
-        <button onclick="document.getElementById('input-importar').click()" style="width:100%; padding:10px; background:#e2e8f0; color:var(--text-dark); border:none; border-radius:10px; font-weight:bold; cursor:pointer;">RESTAURAR BACKUP</button>
-        <input type="file" id="input-importar" style="display:none;" onchange="importarBackup(event)">
-        
-        <button onclick="fecharConfig()" style="width:100%; padding:10px; background:none; border:none; color:red; margin-top:10px; font-weight:bold; cursor:pointer;">Fechar</button>
-    </div>
-</div>
-
-<!-- Modal Relatório -->
-<div id="modal-comprovante">
-    <div class="modal-body">
-        <h3 style="margin-top:0; display:flex; align-items:center; gap:8px;"><i data-lucide="file-text"></i> Relatório</h3>
-        <div id="conteudo-comprovante" style="white-space: pre-wrap; font-size:12px; background:#f1f5f9; padding:10px; border-radius:10px;"></div>
-        <button id="btn-wpp" style="width:100%; background:#22c55e; color:white; border:none; padding:14px; border-radius:12px; font-weight:bold; margin-top:15px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">ENVIAR WHATSAPP</button>
-        <button onclick="fecharComprovante()" style="width:100%; background:#e2e8f0; border:none; padding:12px; border-radius:12px; font-weight:bold; margin-top:8px; cursor:pointer;">FECHAR</button>
-    </div>
-</div>
-
-<script>
-    const CHAVE = 'meu_trabalho_app_v5';
-    
-    const precosPadrao = [
-        { nome: "Rasgo", preco: 50 },
-        { nome: "Rasgo bladder grande", preco: 150 },
-        { nome: "Furo 1/2", preco: 50 },
-        { nome: "Colagem de válvula", preco: 50 }
-    ];
-
-    function initDB() {
-        let def = { reparos: [], hist_reparos: [], tabelaPrecos: precosPadrao };
-        let s = localStorage.getItem(CHAVE);
-        if(!s) return def;
-        try { 
-            let parsed = JSON.parse(s);
-            if(!parsed.tabelaPrecos) parsed.tabelaPrecos = precosPadrao;
-            return parsed;
-        } catch(e){ return def; }
-    }
-
-    var db = initDB();
-    var edicaoIdx = -1;
-    var itensTempAdicionados = [];
-
-    function formatarData(d) {
-        if(!d) return '';
-        let [y, m, day] = d.split('-');
-        return `${day}/${m}/${y}`;
-    }
-
-    function carregarSelectReparos() {
-        let select = document.getElementById('f-sel-rep');
-        select.innerHTML = db.tabelaPrecos.map((item, idx) => 
-            `<option value="${idx}">${item.nome}</option>`
-        ).join('');
-
-        let selectQtd = document.getElementById('f-qtd');
-        let qtdsHtml = '';
-        for(let i = 1; i <= 11; i++) {
-            qtdsHtml += `<option value="${i}">${i}x</option>`;
-        }
-        selectQtd.innerHTML = qtdsHtml;
-    }
-
-    function incluirItemNaLista() {
-        let selIdx = document.getElementById('f-sel-rep').value;
-        let qtd = parseInt(document.getElementById('f-qtd').value);
-        let itemTabela = db.tabelaPrecos[selIdx];
-
-        if(itemTabela) {
-            let subtotal = itemTabela.preco * qtd;
-            itensTempAdicionados.push({
-                nome: itemTabela.nome,
-                qtd: qtd,
-                valorUnit: itemTabela.preco,
-                subtotal: subtotal
-            });
-            atualizarListaTempVisual();
-        }
-    }
-
-    function removerItemTemp(index) {
-        itensTempAdicionados.splice(index, 1);
-        atualizarListaTempVisual();
-    }
-
-    function atualizarListaTempVisual() {
-        let cont = document.getElementById('lista-itens-temp');
-        let totalBruto = 0;
-
-        if(itensTempAdicionados.length === 0) {
-            cont.innerHTML = `<p style="font-size:11px; color:var(--text-muted); margin:0; text-align:center;">Nenhum reparo incluído ainda.</p>`;
-        } else {
-            cont.innerHTML = itensTempAdicionados.map((item, idx) => {
-                totalBruto += item.subtotal;
-                return `
-                    <div class="item-adicionado">
-                        <span><b>${item.qtd}x</b> ${item.nome}</span>
-                        <span style="display:flex; align-items:center; gap:5px;">R$ ${item.subtotal.toFixed(2)} 
-                            <button onclick="removerItemTemp(${idx})" style="border:none; background:none; color:red; cursor:pointer;"><i data-lucide="x" size="14"></i></button>
-                        </span>
-                    </div>
-                `;
-            }).join('');
-            lucide.createIcons();
-        }
-
-        document.getElementById('f-bru').value = totalBruto.toFixed(2);
-    }
-
-    function abrirForm() {
-        carregarSelectReparos();
+function abrirForm() {
+    carregarSelectReparos();
+    // Apenas limpa a lista se não estiver em modo de edição
+    if (edicaoIdx === -1) {
         itensTempAdicionados = [];
         atualizarListaTempVisual();
-
-        let f = document.getElementById('form-adicionar');
-        document.getElementById('f-d').value = new Date().toISOString().split('T')[0];
-        document.getElementById('f-cli').value = '';
-        document.getElementById('f-kite').value = '';
-        document.getElementById('f-gas').value = 0;
-        f.style.display = 'block';
     }
 
-    function fecharForm() {
-        document.getElementById('form-adicionar').style.display = 'none';
-        edicaoIdx = -1;
-    }
+    let f = document.getElementById('form-adicionar');
+    document.getElementById('f-d').value = new Date().toISOString().split('T')[0];
+    document.getElementById('f-cli').value = '';
+    document.getElementById('f-kite').value = '';
+    document.getElementById('f-gas').value = 0;
+    f.style.display = 'block';
+}
 
-    function salvar() {
-        let d = document.getElementById('f-d').value;
-        if(!d) return alert('Selecione a data');
+function editar(i) {
+    let item = db.reparos[i];
+    edicaoIdx = i;
 
-        let cliente = document.getElementById('f-cli').value || 'Cliente não informado';
-        let kite = document.getElementById('f-kite').value || 'Kite não informado';
-        let bruto = parseFloat(document.getElementById('f-bru').value) || 0;
-        let gasto = parseFloat(document.getElementById('f-gas').value) || 0;
+    // Abre o formulário
+    let f = document.getElementById('form-adicionar');
+    carregarSelectReparos();
 
-        let resumoServicos = '';
-        if(itensTempAdicionados.length > 0) {
-            resumoServicos = itensTempAdicionados.map(i => `${i.qtd}x ${i.nome}`).join(', ');
-        } else {
-            resumoServicos = 'Reparo Avulso';
-        }
+    // Preenche os campos de texto com os dados salvos
+    document.getElementById('f-d').value = item.data;
+    document.getElementById('f-cli').value = item.cliente || '';
+    document.getElementById('f-kite').value = item.kite || '';
+    document.getElementById('f-bru').value = (item.bruto || 0).toFixed(2);
+    document.getElementById('f-gas').value = (item.gasto || 0).toFixed(2);
 
-        let reg = {
-            data: d,
-            cliente: cliente,
-            kite: kite,
-            ser: resumoServicos,
-            bruto: bruto,
-            gasto: gasto,
-            pago: false,
-            valorMeu: (bruto - gasto) / 2
-        };
-
-        if(edicaoIdx >= 0) {
-            reg.pago = db.reparos[edicaoIdx].pago || false;
-            db.reparos[edicaoIdx] = reg;
-        } else {
-            db.reparos.push(reg);
-        }
-
-        db.reparos.sort((a,b) => new Date(b.data) - new Date(a.data));
-        localStorage.setItem(CHAVE, JSON.stringify(db));
-        fecharForm();
-        render();
-    }
-
-    function alternarPago(i) {
-        db.reparos[i].pago = !db.reparos[i].pago;
-        localStorage.setItem(CHAVE, JSON.stringify(db));
-        render();
-    }
-
-    function enviarWhatsAppCliente(i) {
-        let x = db.reparos[i];
-        let txt = `*COMPROVANTE DE REPARAÇÃO*\n\n` +
-                  `👤 *Cliente:* ${x.cliente}\n` +
-                  `🪁 *Kite:* ${x.kite}\n` +
-                  `🛠️ *Serviço:* ${x.ser}\n` +
-                  `📅 *Data:* ${formatarData(x.data)}\n` +
-                  `💰 *Valor Total:* R$ ${(x.bruto||0).toFixed(2)}\n\n` +
-                  `Status: *${x.pago ? 'PAGO ✅' : 'PENDENTE ⏳'}*`;
-        
-        window.location.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`;
-    }
-
-    function fecharMes() {
-        let pagos = db.reparos.filter(x => x.pago);
-        if(!pagos.length) return alert('Nenhum reparo está marcado como PAGO para dar baixa.');
-
-        let m = prompt('Digite o mês/ano de fechamento (ex: 08/2026):', new Date().toLocaleDateString('pt-BR', {month:'2-digit', year:'numeric'}));
-        if(!m) return;
-
-        let novosReparos = [];
-        db.reparos.forEach(x => {
-            if(x.pago) {
-                x.mes = m;
-                db.hist_reparos.push(x);
-            } else {
-                novosReparos.push(x);
+    // Mantém os itens que já estavam na lista
+    itensTempAdicionados = [];
+    if (item.ser) {
+        // Converte o texto salvo (ex: "1x Rasgo, 2x Furo") de volta em itens da lista
+        let partes = item.ser.split(', ');
+        partes.forEach(p => {
+            let match = p.match(/^(\d+)x\s+(.+)$/);
+            if (match) {
+                let qtd = parseInt(match[1]);
+                let nome = match[2];
+                let itemTb = db.tabelaPrecos.find(t => t.nome === nome);
+                let preco = itemTb ? itemTb.preco : 0;
+                itensTempAdicionados.push({
+                    nome: nome,
+                    qtd: qtd,
+                    valorUnit: preco,
+                    subtotal: preco * qtd
+                });
             }
         });
-
-        db.reparos = novosReparos;
-        localStorage.setItem(CHAVE, JSON.stringify(db));
-        render();
     }
 
-    function deletar(i) {
-        if(confirm('Excluir este item permanentemente?')) {
-            db.reparos.splice(i, 1);
-            localStorage.setItem(CHAVE, JSON.stringify(db));
-            render();
-        }
+    atualizarListaTempVisual();
+    f.style.display = 'block';
+}
+
+function salvar() {
+    let d = document.getElementById('f-d').value;
+    if(!d) return alert('Selecione a data');
+
+    let cliente = document.getElementById('f-cli').value || 'Cliente não informado';
+    let kite = document.getElementById('f-kite').value || 'Kite não informado';
+    let bruto = parseFloat(document.getElementById('f-bru').value) || 0;
+    let gasto = parseFloat(document.getElementById('f-gas').value) || 0;
+
+    // Se houver itens na lista temporária, atualiza a descrição do serviço.
+    // Se não alterou a lista, mantém a descrição que já existia.
+    let resumoServicos = '';
+    if (itensTempAdicionados.length > 0) {
+        resumoServicos = itensTempAdicionados.map(i => `${i.qtd}x ${i.nome}`).join(', ');
+    } else if (edicaoIdx >= 0 && db.reparos[edicaoIdx].ser) {
+        resumoServicos = db.reparos[edicaoIdx].ser;
+    } else {
+        resumoServicos = 'Reparo Avulso';
     }
 
-    function editar(i) {
-        let item = db.reparos[i];
-        edicaoIdx = i;
-        abrirForm();
-        document.getElementById('f-d').value = item.data;
-        document.getElementById('f-cli').value = item.cliente || '';
-        document.getElementById('f-kite').value = item.kite || '';
-        document.getElementById('f-bru').value = item.bruto || 0;
-        document.getElementById('f-gas').value = item.gasto || 0;
+    let reg = {
+        data: d,
+        cliente: cliente,
+        kite: kite,
+        ser: resumoServicos,
+        bruto: bruto,
+        gasto: gasto,
+        pago: false,
+        valorMeu: (bruto - gasto) / 2
+    };
+
+    if(edicaoIdx >= 0) {
+        reg.pago = db.reparos[edicaoIdx].pago || false;
+        db.reparos[edicaoIdx] = reg;
+    } else {
+        db.reparos.push(reg);
     }
 
-    function render() {
-        let list = db.reparos || [];
-        let totalMeu = 0, totalBruto = 0, totalGasto = 0;
-
-        let html = list.map((x, i) => {
-            totalMeu += (x.valorMeu || 0);
-            totalBruto += (x.bruto || 0);
-            totalGasto += (x.gasto || 0);
-
-            return `
-            <div class="card-wrapper" id="wrapper-${i}">
-                <div class="actions-right">
-                    <!-- Botão WhatsApp -->
-                    <button class="btn-swipe-action" style="color:#22c55e;" title="Enviar WhatsApp" onclick="enviarWhatsAppCliente(${i})">
-                        <i data-lucide="message-circle" size="20"></i>
-                    </button>
-
-                    <!-- Botão Alternar Pago (Seta / Check) -->
-                    <button class="btn-swipe-action" style="color:${x.pago ? '#16a34a' : '#eab308'};" title="Alterar Pagamento" onclick="alternarPago(${i})">
-                        <i data-lucide="${x.pago ? 'check-circle-2' : 'arrow-right-left'}" size="20"></i>
-                    </button>
-
-                    <!-- Botão Editar (Lápis) -->
-                    <button class="btn-swipe-action" style="color:#3b82f6;" title="Editar" onclick="editar(${i})">
-                        <i data-lucide="pencil" size="20"></i>
-                    </button>
-
-                    <!-- Botão Excluir (Lixeira) -->
-                    <button class="btn-swipe-action" style="color:#ef4444;" title="Excluir" onclick="deletar(${i})">
-                        <i data-lucide="trash-2" size="20"></i>
-                    </button>
-                </div>
-
-                <div class="card-registro" id="card-${i}">
-                    <div class="info-esq">
-                        <span class="data-linha"><i data-lucide="calendar" size="12"></i> ${formatarData(x.data)}</span>
-                        <span class="nome-linha"><i data-lucide="user" size="14"></i> ${x.cliente}</span>
-                        ${x.kite ? `<span class="kite-linha"><i data-lucide="wind" size="13"></i> ${x.kite}</span>` : ''}
-                        <span class="servico-linha"><i data-lucide="wrench" size="13"></i> ${x.ser}</span>
-                        ${x.pago ? `<span class="badge-pago"><i data-lucide="check" size="12"></i> PAGO</span>` : ''}
-                    </div>
-                    <div class="valor-dir">
-                        <span class="valor-verde">R$ ${(x.valorMeu || 0).toFixed(2)}</span>
-                        <span class="bruto-sub">(Bruto: R$ ${(x.bruto || 0).toFixed(2)})</span>
-                    </div>
-                </div>
-            </div>`;
-        }).join('');
-
-        document.getElementById('lista-cards').innerHTML = html || '<p style="text-align:center; color:var(--text-muted); font-size:13px; margin-top:20px;">Nenhum reparo cadastrado.</p>';
-
-        document.getElementById('val-saldo-topo').innerText = `R$ ${totalMeu.toFixed(2)}`;
-        document.getElementById('val-bruto-topo').innerText = `R$ ${totalBruto.toFixed(2)}`;
-        document.getElementById('val-gasto-topo').innerText = `R$ ${totalGasto.toFixed(2)}`;
-
-        lucide.createIcons();
-        configurarGestosTouch();
-    }
-
-    /* Controle de Gestos Touch (Apenas para Esquerda) */
-    let startX = 0;
-    let currentX = 0;
-
-    function configurarGestosTouch() {
-        let cards = document.querySelectorAll('.card-registro');
-        cards.forEach((card) => {
-            card.addEventListener('touchstart', (e) => {
-                startX = e.touches[0].clientX;
-            });
-
-            card.addEventListener('touchmove', (e) => {
-                currentX = e.touches[0].clientX;
-                let diff = currentX - startX;
-                
-                if(diff > 0) diff = 0;
-                if(diff < -220) diff = -220;
-
-                card.style.transform = `translateX(${diff}px)`;
-            });
-
-            card.addEventListener('touchend', (e) => {
-                let diff = currentX - startX;
-                card.style.transition = 'transform 0.2s ease-out';
-
-                if (diff < -60) {
-                    card.style.transform = 'translateX(-210px)';
-                } else {
-                    card.style.transform = 'translateX(0px)';
-                }
-                startX = 0;
-                currentX = 0;
-            });
-        });
-    }
-
-    function renderTabelaPrecos() {
-        let cont = document.getElementById('lista-tabela-precos');
-        cont.innerHTML = db.tabelaPrecos.map((item, i) => `
-            <div class="item-tabela-preco">
-                <span><b>${item.nome}</b> - R$ ${item.preco.toFixed(2)}</span>
-                <button onclick="removerTipoReparo(${i})" style="border:none; background:none; color:red; cursor:pointer;"><i data-lucide="trash-2" size="14"></i></button>
-            </div>
-        `).join('');
-        lucide.createIcons();
-    }
-
-    function adicionarNovoTipoReparo() {
-        let n = document.getElementById('cfg-nome').value;
-        let p = parseFloat(document.getElementById('cfg-preco').value);
-        if(!n || isNaN(p)) return alert('Preencha o nome e o preço corretamente.');
-        
-        db.tabelaPrecos.push({ nome: n, preco: p });
-        localStorage.setItem(CHAVE, JSON.stringify(db));
-        document.getElementById('cfg-nome').value = '';
-        document.getElementById('cfg-preco').value = '';
-        renderTabelaPrecos();
-    }
-
-    function removerTipoReparo(i) {
-        db.tabelaPrecos.splice(i, 1);
-        localStorage.setItem(CHAVE, JSON.stringify(db));
-        renderTabelaPrecos();
-    }
-
-    function abrirHistorico() {
-        let h = db.hist_reparos || [];
-        let c = document.getElementById('conteudo-historico');
-        c.innerHTML = h.length ? h.map(x => `
-            <div style="padding:8px 0; border-bottom:1px solid #eee; font-size:12px;">
-                <b>${x.mes}</b> - ${formatarData(x.data)}: R$ ${(x.valorMeu||0).toFixed(2)} (${x.cliente} | Kite: ${x.kite||'N/I'} - ${x.ser})
-            </div>
-        `).join('') : '<p style="font-size:12px; color:var(--text-muted);">Histórico vazio.</p>';
-        document.getElementById('modal-historico').style.display = 'flex';
-    }
-
-    function fecharHistorico() { document.getElementById('modal-historico').style.display = 'none'; }
-    function abrirConfig() { 
-        renderTabelaPrecos();
-        document.getElementById('modal-config').style.display = 'flex'; 
-    }
-    function fecharConfig() { document.getElementById('modal-config').style.display = 'none'; }
-    
-    function gerarRelatorio() {
-        let l = db.reparos || [];
-        if(!l.length) return alert('Sem dados para relatório');
-        let txt = `*RELATÓRIO - REPAROS*\n\n`;
-        let tot = 0;
-        l.forEach(x => {
-            tot += x.valorMeu || 0;
-            txt += `${formatarData(x.data)} - ${x.cliente} [Kite: ${x.kite||'N/A'}] (${x.ser}): R$ ${(x.valorMeu||0).toFixed(2)} ${x.pago ? '[PAGO]' : ''}\n`;
-        });
-        txt += `\n*TOTAL: R$ ${tot.toFixed(2)}*`;
-        document.getElementById('conteudo-comprovante').innerText = txt;
-        document.getElementById('modal-comprovante').style.display = 'flex';
-        document.getElementById('btn-wpp').onclick = () => {
-            window.location.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`;
-        };
-    }
-    function fecharComprovante() { document.getElementById('modal-comprovante').style.display = 'none'; }
-
-    function exportarBackup() {
-        let a = document.createElement('a');
-        a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
-        a.download = `backup_reparos.json`;
-        a.click();
-    }
-
-    function importarBackup(e) {
-        let r = new FileReader();
-        r.onload = (ev) => {
-            db = JSON.parse(ev.target.result);
-            localStorage.setItem(CHAVE, JSON.stringify(db));
-            render();
-            fecharConfig();
-        };
-        r.readAsText(e.target.files[0]);
-    }
-
+    db.reparos.sort((a,b) => new Date(b.data) - new Date(a.data));
+    localStorage.setItem(CHAVE, JSON.stringify(db));
+    fecharForm();
     render();
-</script>
-</body>
-</html>
+}
