@@ -9,7 +9,6 @@
     <link rel="apple-touch-icon" href="Icon.png.png">
     <meta name="theme-color" content="#f8fafc">
 
-    <!-- Biblioteca Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
@@ -52,7 +51,7 @@
             letter-spacing: 1.5px;
         }
         .header-brand img { width: 28px; height: 28px; object-fit: contain; }
-        .btn-gear { background: none; border: none; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; }
+        .btn-menu { background: none; border: none; cursor: pointer; color: var(--text-dark); display: flex; align-items: center; padding: 5px; }
 
         .card-resumo { 
             background: var(--card-dark); 
@@ -98,24 +97,6 @@
         .item-detalhe span { display: block; font-size: 9px; font-weight: 700; color: #94a3b8; letter-spacing: 0.5px; margin-bottom: 4px; }
         .item-detalhe b { font-size: 14px; color: white; font-weight: 700; }
 
-        .btn-historico-completo { 
-            width: 100%; 
-            background: #e2e8f0; 
-            border: none; 
-            padding: 12px; 
-            border-radius: 14px; 
-            font-size: 11px; 
-            font-weight: 800; 
-            color: #475569; 
-            letter-spacing: 0.5px; 
-            cursor: pointer; 
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
         .grid-botoes-acao { display: flex; gap: 10px; margin-bottom: 20px; }
         .btn-add { 
             flex: 1; 
@@ -152,7 +133,7 @@
             gap: 6px;
         }
 
-        /* Estrutura do Card Deslizável */
+        /* Card Deslizável */
         .card-wrapper {
             position: relative;
             margin-bottom: 12px;
@@ -205,11 +186,7 @@
         }
 
         .info-esq { display: flex; flex-direction: column; gap: 4px; }
-        .data-linha, .nome-linha, .kite-linha, .servico-linha {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
+        .data-linha, .nome-linha, .kite-linha, .servico-linha { display: flex; align-items: center; gap: 6px; }
         .data-linha { font-size: 10px; color: var(--text-muted); font-weight: 600; }
         .nome-linha { font-size: 15px; font-weight: 800; color: var(--text-dark); margin-top: 2px; }
         .kite-linha { font-size: 12px; font-weight: 700; color: var(--accent-purple); }
@@ -240,8 +217,35 @@
         .box-itens-adicionados { background: #f8fafc; border: 1px dashed var(--border-color); padding: 10px; border-radius: 10px; margin-bottom: 12px; }
         .item-adicionado { display: flex; justify-content: space-between; align-items: center; font-size: 12px; padding: 4px 0; border-bottom: 1px solid #edf2f7; }
 
-        #modal-historico, #modal-config, #modal-comprovante { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); z-index:1000; justify-content:center; align-items:center; backdrop-filter: blur(4px); }
-        .modal-body { background:white; width:90%; max-width:400px; border-radius:24px; padding:20px; max-height:80vh; overflow-y:auto; }
+        /* Modais */
+        .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); z-index:1000; justify-content:center; align-items:center; backdrop-filter: blur(4px); }
+        .modal-body { background:white; width:90%; max-width:400px; border-radius:24px; padding:20px; max-height:85vh; overflow-y:auto; }
+
+        /* Estilo Menu Principal (3 Barras) */
+        .btn-menu-opcao {
+            width: 100%;
+            background: #f1f5f9;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--text-dark);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .card-mes-historico {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
         .item-tabela-preco { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
     </style>
 </head>
@@ -252,7 +256,8 @@
         <img src="Icon.png.png" alt="Logo" onerror="this.style.display='none'">
         <span>MEU TRABALHO</span>
     </div>
-    <button class="btn-gear" onclick="abrirConfig()"><i data-lucide="settings" size="22"></i></button>
+    <!-- Menu 3 Barras -->
+    <button class="btn-menu" onclick="abrirMenuPrincipal()"><i data-lucide="menu" size="26"></i></button>
 </header>
 
 <div class="card-resumo">
@@ -272,16 +277,12 @@
     </div>
 </div>
 
-<button class="btn-historico-completo" onclick="abrirHistorico()">
-    <i data-lucide="archive" size="16"></i> HISTÓRICO COMPLETO
-</button>
-
 <div class="grid-botoes-acao">
     <button class="btn-add" onclick="abrirForm()"><i data-lucide="plus" size="16"></i> ADICIONAR</button>
     <button class="btn-baixa" onclick="fecharMes()"><i data-lucide="check-check" size="16"></i> BAIXA GERAL</button>
 </div>
 
-<!-- Form de Inclusão -->
+<!-- Form de Inclusão/Edição -->
 <div class="caixa-form" id="form-adicionar">
     <label>Data</label>
     <input type="date" id="f-d">
@@ -328,48 +329,74 @@
 
 <div id="lista-cards"></div>
 
-<!-- Modal Histórico -->
-<div id="modal-historico">
+<!-- MODAL MENU PRINCIPAL (3 BARRAS) -->
+<div class="modal-overlay" id="modal-menu-principal">
     <div class="modal-body">
-        <h3 style="margin-top:0; display:flex; align-items:center; gap:8px;"><i data-lucide="history"></i> Histórico Encerrado</h3>
-        <div id="conteudo-historico"></div>
-        <button onclick="fecharHistorico()" style="width:100%; padding:12px; background:#e2e8f0; border:none; border-radius:12px; font-weight:bold; margin-top:15px; cursor:pointer;">Fechar</button>
-    </div>
-</div>
-
-<!-- Modal Configurações & Tabela de Preços -->
-<div id="modal-config">
-    <div class="modal-body">
-        <h3 style="margin-top:0; text-align:center; display:flex; align-items:center; justify-content:center; gap:8px;"><i data-lucide="sliders"></i> Tabela de Reparos</h3>
+        <h3 style="margin-top:0; text-align:center; margin-bottom:20px;">MENU PRINCIPAL</h3>
         
-        <div style="background:#f8fafc; padding:12px; border-radius:12px; margin-bottom:15px; border:1px solid #e2e8f0;">
-            <label style="margin-top:0;">Nome da Reparação</label>
-            <input type="text" id="cfg-nome" placeholder="Ex: Rasgo">
-            <label>Preço Unitário (R$)</label>
-            <input type="number" step="0.01" id="cfg-preco" placeholder="50.00">
-            <button onclick="adicionarNovoTipoReparo()" style="width:100%; padding:10px; background:var(--accent-purple); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">+ Cadastrar Reparo</button>
-        </div>
+        <button class="btn-menu-opcao" onclick="abrirReparacaoProduto()">
+            <span style="display:flex; align-items:center; gap:10px;"><i data-lucide="wrench" size="18"></i> Reparação Produto</span>
+            <i data-lucide="chevron-right" size="18"></i>
+        </button>
 
-        <label>Reparos Cadastrados:</label>
-        <div id="lista-tabela-precos" style="max-height:180px; overflow-y:auto; margin-bottom:15px;"></div>
+        <button class="btn-menu-opcao" onclick="abrirHistoricoMensal()">
+            <span style="display:flex; align-items:center; gap:10px;"><i data-lucide="calendar" size="18"></i> Histórico por Mês</span>
+            <i data-lucide="chevron-right" size="18"></i>
+        </button>
 
         <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
 
-        <button onclick="exportarBackup()" style="width:100%; padding:10px; background:var(--card-dark); color:white; border:none; border-radius:10px; font-weight:bold; margin-bottom:8px; cursor:pointer;">BAIXAR BACKUP</button>
-        <button onclick="document.getElementById('input-importar').click()" style="width:100%; padding:10px; background:#e2e8f0; color:var(--text-dark); border:none; border-radius:10px; font-weight:bold; cursor:pointer;">RESTAURAR BACKUP</button>
+        <button class="btn-menu-opcao" onclick="exportarBackup()" style="background:#1e293b; color:white;">
+            <span style="display:flex; align-items:center; gap:10px;"><i data-lucide="download" size="18"></i> Baixar Backup</span>
+        </button>
+
+        <button class="btn-menu-opcao" onclick="document.getElementById('input-importar').click()" style="background:#e2e8f0;">
+            <span style="display:flex; align-items:center; gap:10px;"><i data-lucide="upload" size="18"></i> Restaurar Backup</span>
+        </button>
         <input type="file" id="input-importar" style="display:none;" onchange="importarBackup(event)">
-        
-        <button onclick="fecharConfig()" style="width:100%; padding:10px; background:none; border:none; color:red; margin-top:10px; font-weight:bold; cursor:pointer;">Fechar</button>
+
+        <button onclick="fecharModal('modal-menu-principal')" style="width:100%; padding:12px; background:none; border:none; color:red; margin-top:10px; font-weight:bold; cursor:pointer;">Fechar</button>
     </div>
 </div>
 
-<!-- Modal Relatório -->
-<div id="modal-comprovante">
+<!-- MODAL REPARAÇÃO PRODUTO (Tabela e Adicionar Tipos de Reparo) -->
+<div class="modal-overlay" id="modal-reparacao-produto">
+    <div class="modal-body">
+        <h3 style="margin-top:0; text-align:center; display:flex; align-items:center; justify-content:center; gap:8px;">
+            <i data-lucide="wrench"></i> Reparação Produto
+        </h3>
+        
+        <div style="background:#f8fafc; padding:12px; border-radius:12px; margin-bottom:15px; border:1px solid #e2e8f0;">
+            <label style="margin-top:0;">Nome do Serviço/Produto</label>
+            <input type="text" id="cfg-nome" placeholder="Ex: Rasgo Bladder">
+            <label>Preço Unitário (R$)</label>
+            <input type="number" step="0.01" id="cfg-preco" placeholder="50.00">
+            <button onclick="adicionarNovoTipoReparo()" style="width:100%; padding:10px; background:var(--accent-purple); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">+ Adicionar Reparação</button>
+        </div>
+
+        <label>Reparações Cadastradas:</label>
+        <div id="lista-tabela-precos" style="max-height:220px; overflow-y:auto; margin-bottom:15px;"></div>
+
+        <button onclick="fecharModal('modal-reparacao-produto'); abrirMenuPrincipal();" style="width:100%; padding:12px; background:#e2e8f0; border:none; border-radius:12px; font-weight:bold; cursor:pointer;">Voltar ao Menu</button>
+    </div>
+</div>
+
+<!-- MODAL HISTÓRICO MENSAL -->
+<div class="modal-overlay" id="modal-historico-mensal">
+    <div class="modal-body">
+        <h3 style="margin-top:0; display:flex; align-items:center; gap:8px;"><i data-lucide="history"></i> Histórico Mensal</h3>
+        <div id="conteudo-historico-meses" style="max-height:350px; overflow-y:auto;"></div>
+        <button onclick="fecharModal('modal-historico-mensal'); abrirMenuPrincipal();" style="width:100%; padding:12px; background:#e2e8f0; border:none; border-radius:12px; font-weight:bold; margin-top:15px; cursor:pointer;">Voltar ao Menu</button>
+    </div>
+</div>
+
+<!-- MODAL COMPROVANTE -->
+<div class="modal-overlay" id="modal-comprovante">
     <div class="modal-body">
         <h3 style="margin-top:0; display:flex; align-items:center; gap:8px;"><i data-lucide="file-text"></i> Relatório</h3>
         <div id="conteudo-comprovante" style="white-space: pre-wrap; font-size:12px; background:#f1f5f9; padding:10px; border-radius:10px;"></div>
         <button id="btn-wpp" style="width:100%; background:#22c55e; color:white; border:none; padding:14px; border-radius:12px; font-weight:bold; margin-top:15px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">ENVIAR WHATSAPP</button>
-        <button onclick="fecharComprovante()" style="width:100%; background:#e2e8f0; border:none; padding:12px; border-radius:12px; font-weight:bold; margin-top:8px; cursor:pointer;">FECHAR</button>
+        <button onclick="fecharModal('modal-comprovante')" style="width:100%; background:#e2e8f0; border:none; padding:12px; border-radius:12px; font-weight:bold; margin-top:8px; cursor:pointer;">FECHAR</button>
     </div>
 </div>
 
@@ -402,6 +429,27 @@
         if(!d) return '';
         let [y, m, day] = d.split('-');
         return `${day}/${m}/${y}`;
+    }
+
+    function abrirMenuPrincipal() {
+        document.getElementById('modal-menu-principal').style.display = 'flex';
+        lucide.createIcons();
+    }
+
+    function fecharModal(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+
+    function abrirReparacaoProduto() {
+        fecharModal('modal-menu-principal');
+        renderTabelaPrecos();
+        document.getElementById('modal-reparacao-produto').style.display = 'flex';
+    }
+
+    function abrirHistoricoMensal() {
+        fecharModal('modal-menu-principal');
+        renderHistoricoMensal();
+        document.getElementById('modal-historico-mensal').style.display = 'flex';
     }
 
     function carregarSelectReparos() {
@@ -549,7 +597,7 @@
         let pagos = db.reparos.filter(x => x.pago);
         if(!pagos.length) return alert('Nenhum reparo está marcado como PAGO para dar baixa.');
 
-        let m = prompt('Digite o mês/ano de fechamento (ex: 08/2026):', new Date().toLocaleDateString('pt-BR', {month:'2-digit', year:'numeric'}));
+        let m = prompt('Digite o mês/ano de fechamento (ex: Janeiro/2026):', new Date().toLocaleDateString('pt-BR', {month:'long', year:'numeric'}));
         if(!m) return;
 
         let novosReparos = [];
@@ -731,24 +779,46 @@
         renderTabelaPrecos();
     }
 
-    function abrirHistorico() {
+    function renderHistoricoMensal() {
         let h = db.hist_reparos || [];
-        let c = document.getElementById('conteudo-historico');
-        c.innerHTML = h.length ? h.map(x => `
-            <div style="padding:8px 0; border-bottom:1px solid #eee; font-size:12px;">
-                <b>${x.mes}</b> - ${formatarData(x.data)}: R$ ${(x.valorMeu||0).toFixed(2)} (${x.cliente} | Kite: ${x.kite||'N/I'} - ${x.ser})
-            </div>
-        `).join('') : '<p style="font-size:12px; color:var(--text-muted);">Histórico vazio.</p>';
-        document.getElementById('modal-historico').style.display = 'flex';
+        let cont = document.getElementById('conteudo-historico-meses');
+
+        if (!h.length) {
+            cont.innerHTML = '<p style="font-size:12px; color:var(--text-muted); text-align:center;">Nenhum histórico encerrado.</p>';
+            return;
+        }
+
+        // Agrupar itens por Mês
+        let mesesAgrupados = {};
+        h.forEach(item => {
+            let m = item.mes || 'Outros';
+            if (!mesesAgrupados[m]) {
+                mesesAgrupados[m] = { total: 0, itens: [] };
+            }
+            mesesAgrupados[m].total += (item.valorMeu || 0);
+            mesesAgrupados[m].itens.push(item);
+        });
+
+        let html = '';
+        for (let m in mesesAgrupados) {
+            html += `
+                <div class="card-mes-historico">
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:6px; margin-bottom:8px;">
+                        <b style="font-size:14px; text-transform:capitalize;">${m}</b>
+                        <span style="font-weight:bold; color:var(--accent-green);">R$ ${mesesAgrupados[m].total.toFixed(2)}</span>
+                    </div>
+                    ${mesesAgrupados[m].itens.map(x => `
+                        <div style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">
+                            • ${formatarData(x.data)}: <b>${x.cliente}</b> (${x.ser}) - R$ ${(x.valorMeu || 0).toFixed(2)}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        cont.innerHTML = html;
     }
 
-    function fecharHistorico() { document.getElementById('modal-historico').style.display = 'none'; }
-    function abrirConfig() { 
-        renderTabelaPrecos();
-        document.getElementById('modal-config').style.display = 'flex'; 
-    }
-    function fecharConfig() { document.getElementById('modal-config').style.display = 'none'; }
-    
     function gerarRelatorio() {
         let l = db.reparos || [];
         if(!l.length) return alert('Sem dados para relatório');
@@ -765,7 +835,6 @@
             window.location.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`;
         };
     }
-    function fecharComprovante() { document.getElementById('modal-comprovante').style.display = 'none'; }
 
     function exportarBackup() {
         let a = document.createElement('a');
@@ -780,7 +849,8 @@
             db = JSON.parse(ev.target.result);
             localStorage.setItem(CHAVE, JSON.stringify(db));
             render();
-            fecharConfig();
+            fecharModal('modal-menu-principal');
+            alert('Backup restaurado com sucesso!');
         };
         r.readAsText(e.target.files[0]);
     }
