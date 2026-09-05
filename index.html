@@ -7,19 +7,19 @@
 
     <link rel="icon" type="image/png" href="Icon.png.png">
     <link rel="apple-touch-icon" href="Icon.png.png">
-    <meta name="theme-color" content="#f8fafc">
+    <meta name="theme-color" content="#f4f7f6">
 
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
         :root { 
-            --bg: #f8fafc;
-            --card-dark: #121826;
-            --card-light: #ffffff;
-            --text-dark: #0f172a;
-            --text-muted: #64748b;
-            --accent-green: #10b981;
-            --accent-purple: #5865f2;
+            --bg: #f4f7f6;
+            --primary: #127475;
+            --primary-light: #e6f2f2;
+            --card-dark: #0f4c5c;
+            --text-dark: #1c2d37;
+            --text-muted: #627b87;
+            --accent-green: #0ea5e9;
             --border-color: #e2e8f0;
         }
 
@@ -48,11 +48,112 @@
             gap: 10px; 
             font-weight: 800; 
             font-size: 15px; 
-            letter-spacing: 1.5px;
+            letter-spacing: 1px;
+            color: var(--card-dark);
         }
-        .header-brand img { width: 28px; height: 28px; object-fit: contain; }
-        .btn-menu { background: none; border: none; cursor: pointer; color: var(--text-dark); display: flex; align-items: center; padding: 5px; }
+        .btn-menu { background: none; border: none; cursor: pointer; color: var(--card-dark); display: flex; align-items: center; padding: 5px; }
 
+        /* MODO MENU LATERAL (DRAWER SLIDE-IN) */
+        .drawer-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.35);
+            backdrop-filter: blur(3px);
+            z-index: 1000;
+        }
+
+        .drawer-content {
+            position: fixed;
+            top: 0; left: 0;
+            width: 80%;
+            max-width: 320px;
+            height: 100%;
+            background: #f7faf9;
+            z-index: 1001;
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 24px 16px;
+            box-shadow: 4px 0 25px rgba(0,0,0,0.15);
+        }
+
+        .drawer-overlay.active { display: block; }
+        .drawer-overlay.active + .drawer-content, 
+        .drawer-content.active { transform: translateX(0); }
+
+        /* Cabeçalho do Drawer */
+        .drawer-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .drawer-icon-box {
+            width: 46px;
+            height: 46px;
+            background: #d4e8e6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+        }
+        .drawer-title-box h3 { margin: 0; font-size: 17px; font-weight: 800; color: #1e293b; }
+        .drawer-title-box span { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+
+        .drawer-divider {
+            height: 3px;
+            background: linear-gradient(90deg, #127475 0%, #38bdf8 50%, #fb7185 100%);
+            border-radius: 3px;
+            margin-bottom: 24px;
+        }
+
+        /* Itens da lista do Menu */
+        .drawer-nav { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+        .drawer-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 14px;
+            border: none;
+            background: transparent;
+            color: #334155;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: left;
+            width: 100%;
+            transition: all 0.2s;
+        }
+        .drawer-item.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(18, 116, 117, 0.25);
+        }
+
+        /* Rodapé de Perfil */
+        .drawer-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+        }
+        .profile-box { display: flex; align-items: center; gap: 10px; }
+        .profile-avatar {
+            width: 38px; height: 38px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 15px;
+        }
+
+        /* Estilos do App */
         .card-resumo { 
             background: var(--card-dark); 
             color: white; 
@@ -64,189 +165,36 @@
         }
         .btn-relatorio-top {
             position: absolute;
-            top: 20px;
-            right: 20px;
-            background: #232d42;
-            border: none;
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            cursor: pointer;
+            top: 20px; right: 20px;
+            background: rgba(255,255,255,0.1);
+            border: none; width: 42px; height: 42px;
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            color: white; cursor: pointer;
         }
-        .card-resumo .label-saldo { 
-            font-size: 10px; 
-            font-weight: 700; 
-            letter-spacing: 1.5px; 
-            color: #94a3b8; 
-            text-align: center; 
-            display: block; 
-            margin-bottom: 5px;
-        }
-        .card-resumo .valor-saldo { 
-            font-size: 34px; 
-            font-weight: 800; 
-            text-align: center; 
-            margin: 0 0 20px 0;
-        }
+        .card-resumo .label-saldo { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; color: #94a3b8; text-align: center; display: block; margin-bottom: 5px; }
+        .card-resumo .valor-saldo { font-size: 34px; font-weight: 800; text-align: center; margin: 0 0 20px 0; }
         .divisoria { border-top: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; }
         .grid-detalhes { display: flex; justify-content: space-around; text-align: center; }
         .item-detalhe span { display: block; font-size: 9px; font-weight: 700; color: #94a3b8; letter-spacing: 0.5px; margin-bottom: 4px; }
         .item-detalhe b { font-size: 14px; color: white; font-weight: 700; }
 
         .grid-botoes-acao { display: flex; gap: 10px; margin-bottom: 20px; }
-        .btn-add { 
-            flex: 1; 
-            background: white; 
-            border: 1px solid var(--border-color); 
-            padding: 14px; 
-            border-radius: 14px; 
-            font-weight: 800; 
-            font-size: 12px; 
-            letter-spacing: 0.5px; 
-            color: var(--text-dark); 
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-        .btn-baixa { 
-            flex: 1; 
-            background: var(--accent-purple); 
-            border: none; 
-            padding: 14px; 
-            border-radius: 14px; 
-            font-weight: 800; 
-            font-size: 12px; 
-            letter-spacing: 0.5px; 
-            color: white; 
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(88, 101, 242, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
+        .btn-add { flex: 1; background: white; border: 1px solid var(--border-color); padding: 14px; border-radius: 14px; font-weight: 800; font-size: 12px; color: var(--text-dark); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .btn-baixa { flex: 1; background: var(--primary); border: none; padding: 14px; border-radius: 14px; font-weight: 800; font-size: 12px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
 
-        /* Card Deslizável */
-        .card-wrapper {
-            position: relative;
-            margin-bottom: 12px;
-            border-radius: 18px;
-            overflow: hidden;
-            background: #cbd5e1;
-        }
-
-        .actions-right {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            right: 0;
-            display: flex;
-            align-items: center;
-            padding: 0 10px;
-            gap: 6px;
-            justify-content: flex-end;
-        }
-
-        .btn-swipe-action {
-            border: none;
-            background: rgba(255,255,255,0.95);
-            border-radius: 12px;
-            padding: 6px;
-            font-size: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            min-width: 40px;
-            height: 40px;
-            color: var(--text-dark);
-        }
-
-        .card-registro { 
-            background: white; 
-            padding: 16px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: flex-start; 
-            position: relative;
-            z-index: 2;
-            transition: transform 0.2s ease-out;
-            touch-action: pan-y;
-            border-radius: 18px;
-        }
-
-        .info-esq { display: flex; flex-direction: column; gap: 4px; }
-        .data-linha, .nome-linha, .kite-linha, .servico-linha { display: flex; align-items: center; gap: 6px; }
-        .data-linha { font-size: 10px; color: var(--text-muted); font-weight: 600; }
-        .nome-linha { font-size: 15px; font-weight: 800; color: var(--text-dark); margin-top: 2px; }
-        .kite-linha { font-size: 12px; font-weight: 700; color: var(--accent-purple); }
-        .servico-linha { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-        
-        .badge-pago {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            background: #dcfce7;
-            color: #15803d;
-            font-size: 10px;
-            font-weight: 800;
-            padding: 3px 8px;
-            border-radius: 6px;
-            margin-top: 4px;
-            width: fit-content;
-        }
-
-        .valor-dir { text-align: right; }
-        .valor-verde { font-size: 15px; font-weight: 800; color: var(--accent-green); }
-        .bruto-sub { font-size: 10px; color: var(--text-muted); display: block; margin-top: 2px; }
+        .card-wrapper { position: relative; margin-bottom: 12px; border-radius: 18px; overflow: hidden; background: #cbd5e1; }
+        .actions-right { position: absolute; top: 0; bottom: 0; right: 0; display: flex; align-items: center; padding: 0 10px; gap: 6px; justify-content: flex-end; }
+        .btn-swipe-action { border: none; background: rgba(255,255,255,0.95); border-radius: 12px; padding: 6px; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; min-width: 40px; height: 40px; }
+        .card-registro { background: white; padding: 16px; display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 2; transition: transform 0.2s ease-out; touch-action: pan-y; border-radius: 18px; }
 
         .caixa-form { background: white; padding: 20px; border-radius: 20px; margin-bottom: 20px; border: 1px solid var(--border-color); display: none; }
-        label { display: block; margin-bottom: 5px; font-size: 10px; font-weight: 800; color: var(--text-muted); letter-spacing: 0.5px; }
-        input, select { width: 100%; box-sizing: border-box; padding: 12px; margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 14px; outline: none; background: #fff; }
+        label { display: block; margin-bottom: 5px; font-size: 10px; font-weight: 800; color: var(--text-muted); }
+        input, select { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 14px; outline: none; }
 
-        .box-itens-adicionados { background: #f8fafc; border: 1px dashed var(--border-color); padding: 10px; border-radius: 10px; margin-bottom: 12px; }
-        .item-adicionado { display: flex; justify-content: space-between; align-items: center; font-size: 12px; padding: 4px 0; border-bottom: 1px solid #edf2f7; }
-
-        /* Modais */
-        .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); z-index:1000; justify-content:center; align-items:center; backdrop-filter: blur(4px); }
+        .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); z-index:1100; justify-content:center; align-items:center; backdrop-filter: blur(4px); }
         .modal-body { background:white; width:90%; max-width:400px; border-radius:24px; padding:20px; max-height:85vh; overflow-y:auto; }
-
-        /* Estilo Menu Principal (3 Barras) */
-        .btn-menu-opcao {
-            width: 100%;
-            background: #f1f5f9;
-            border: none;
-            padding: 14px;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 13px;
-            color: var(--text-dark);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-
-        .card-mes-historico {
-            background: #f8fafc;
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 12px;
-            margin-bottom: 10px;
-        }
-
         .item-tabela-preco { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+        .card-mes-historico { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 14px; padding: 12px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -256,9 +204,56 @@
         <img src="Icon.png.png" alt="Logo" onerror="this.style.display='none'">
         <span>MEU TRABALHO</span>
     </div>
-    <!-- Menu 3 Barras -->
-    <button class="btn-menu" onclick="abrirMenuPrincipal()"><i data-lucide="menu" size="26"></i></button>
+    <button class="btn-menu" onclick="toggleDrawer(true)"><i data-lucide="menu" size="26"></i></button>
 </header>
+
+<!-- DRAWER LATERAL -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="toggleDrawer(false)"></div>
+<div class="drawer-content" id="drawer-content">
+    <div>
+        <div class="drawer-header">
+            <div class="drawer-icon-box">
+                <i data-lucide="wind" size="24"></i>
+            </div>
+            <div class="drawer-title-box">
+                <h3>Cabana do Kite</h3>
+                <span>Responsável Kite</span>
+            </div>
+        </div>
+
+        <div class="drawer-divider"></div>
+
+        <div class="drawer-nav">
+            <button class="drawer-item" onclick="abrirReparacaoProduto()">
+                <i data-lucide="package" size="20"></i> Gestão Equipamentos
+            </button>
+            <button class="drawer-item active" onclick="fecharDrawerEIrParaReparacoes()">
+                <i data-lucide="wrench" size="20"></i> Reparações
+            </button>
+            <button class="drawer-item" onclick="abrirHistoricoMensal()">
+                <i data-lucide="calendar" size="20"></i> Histórico por Mês
+            </button>
+            <button class="drawer-item" onclick="exportarBackup()">
+                <i data-lucide="download" size="20"></i> Baixar Backup
+            </button>
+            <button class="drawer-item" onclick="document.getElementById('input-importar').click()">
+                <i data-lucide="upload" size="20"></i> Restaurar Backup
+            </button>
+            <input type="file" id="input-importar" style="display:none;" onchange="importarBackup(event)">
+        </div>
+    </div>
+
+    <div class="drawer-footer">
+        <div class="profile-box">
+            <div class="profile-avatar">N</div>
+            <div>
+                <div style="font-weight: 800; font-size: 14px; color: #1e293b;">Nathanzinho</div>
+                <div style="font-size: 11px; color: var(--text-muted);">Responsável Kite</div>
+            </div>
+        </div>
+        <i data-lucide="chevron-up" size="18" style="color: var(--text-muted);"></i>
+    </div>
+</div>
 
 <div class="card-resumo">
     <button class="btn-relatorio-top" onclick="gerarRelatorio()" title="Gerar Relatório"><i data-lucide="download" size="18"></i></button>
@@ -294,7 +289,7 @@
     <input type="text" id="f-kite" placeholder="Ex: Core XR7 10m / Duotone Rebel">
 
     <div style="background:#f1f5f9; padding:12px; border-radius:12px; margin-bottom:12px;">
-        <label style="color:var(--accent-purple);">SELECIONAR REPARAÇÕES</label>
+        <label style="color:var(--primary);">SELECIONAR REPARAÇÕES</label>
         
         <div style="display:flex; gap:8px;">
             <div style="flex:2;">
@@ -305,7 +300,7 @@
             </div>
         </div>
 
-        <button type="button" onclick="incluirItemNaLista()" style="width:100%; margin-top:8px; background:var(--accent-purple); color:white; border:none; padding:10px; border-radius:8px; font-weight:bold; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+        <button type="button" onclick="incluirItemNaLista()" style="width:100%; margin-top:8px; background:var(--primary); color:white; border:none; padding:10px; border-radius:8px; font-weight:bold; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
             <i data-lucide="plus-circle" size="16"></i> Incluir este Reparo
         </button>
     </div>
@@ -329,41 +324,11 @@
 
 <div id="lista-cards"></div>
 
-<!-- MODAL MENU PRINCIPAL (3 BARRAS) -->
-<div class="modal-overlay" id="modal-menu-principal">
-    <div class="modal-body">
-        <h3 style="margin-top:0; text-align:center; margin-bottom:20px;">MENU PRINCIPAL</h3>
-        
-        <button class="btn-menu-opcao" onclick="abrirReparacaoProduto()">
-            <span style="display:flex; align-items:center; gap:10px;"><i data-lucide="wrench" size="18"></i> Reparação Produto</span>
-            <i data-lucide="chevron-right" size="18"></i>
-        </button>
-
-        <button class="btn-menu-opcao" onclick="abrirHistoricoMensal()">
-            <span style="display:flex; align-items:center; gap:10px;"><i data-lucide="calendar" size="18"></i> Histórico por Mês</span>
-            <i data-lucide="chevron-right" size="18"></i>
-        </button>
-
-        <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
-
-        <button class="btn-menu-opcao" onclick="exportarBackup()" style="background:#1e293b; color:white;">
-            <span style="display:flex; align-items:center; gap:10px;"><i data-lucide="download" size="18"></i> Baixar Backup</span>
-        </button>
-
-        <button class="btn-menu-opcao" onclick="document.getElementById('input-importar').click()" style="background:#e2e8f0;">
-            <span style="display:flex; align-items:center; gap:10px;"><i data-lucide="upload" size="18"></i> Restaurar Backup</span>
-        </button>
-        <input type="file" id="input-importar" style="display:none;" onchange="importarBackup(event)">
-
-        <button onclick="fecharModal('modal-menu-principal')" style="width:100%; padding:12px; background:none; border:none; color:red; margin-top:10px; font-weight:bold; cursor:pointer;">Fechar</button>
-    </div>
-</div>
-
-<!-- MODAL REPARAÇÃO PRODUTO (Tabela e Adicionar Tipos de Reparo) -->
+<!-- MODAL GESTÃO EQUIPAMENTOS / TABELA -->
 <div class="modal-overlay" id="modal-reparacao-produto">
     <div class="modal-body">
         <h3 style="margin-top:0; text-align:center; display:flex; align-items:center; justify-content:center; gap:8px;">
-            <i data-lucide="wrench"></i> Reparação Produto
+            <i data-lucide="wrench"></i> Gestão Equipamentos
         </h3>
         
         <div style="background:#f8fafc; padding:12px; border-radius:12px; margin-bottom:15px; border:1px solid #e2e8f0;">
@@ -371,13 +336,13 @@
             <input type="text" id="cfg-nome" placeholder="Ex: Rasgo Bladder">
             <label>Preço Unitário (R$)</label>
             <input type="number" step="0.01" id="cfg-preco" placeholder="50.00">
-            <button onclick="adicionarNovoTipoReparo()" style="width:100%; padding:10px; background:var(--accent-purple); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">+ Adicionar Reparação</button>
+            <button onclick="adicionarNovoTipoReparo()" style="width:100%; padding:10px; background:var(--primary); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">+ Adicionar Produto</button>
         </div>
 
-        <label>Reparações Cadastradas:</label>
+        <label>Produtos Cadastrados:</label>
         <div id="lista-tabela-precos" style="max-height:220px; overflow-y:auto; margin-bottom:15px;"></div>
 
-        <button onclick="fecharModal('modal-reparacao-produto'); abrirMenuPrincipal();" style="width:100%; padding:12px; background:#e2e8f0; border:none; border-radius:12px; font-weight:bold; cursor:pointer;">Voltar ao Menu</button>
+        <button onclick="fecharModal('modal-reparacao-produto')" style="width:100%; padding:12px; background:#e2e8f0; border:none; border-radius:12px; font-weight:bold; cursor:pointer;">Fechar</button>
     </div>
 </div>
 
@@ -386,7 +351,7 @@
     <div class="modal-body">
         <h3 style="margin-top:0; display:flex; align-items:center; gap:8px;"><i data-lucide="history"></i> Histórico Mensal</h3>
         <div id="conteudo-historico-meses" style="max-height:350px; overflow-y:auto;"></div>
-        <button onclick="fecharModal('modal-historico-mensal'); abrirMenuPrincipal();" style="width:100%; padding:12px; background:#e2e8f0; border:none; border-radius:12px; font-weight:bold; margin-top:15px; cursor:pointer;">Voltar ao Menu</button>
+        <button onclick="fecharModal('modal-historico-mensal')" style="width:100%; padding:12px; background:#e2e8f0; border:none; border-radius:12px; font-weight:bold; margin-top:15px; cursor:pointer;">Fechar</button>
     </div>
 </div>
 
@@ -425,31 +390,41 @@
     var edicaoIdx = -1;
     var itensTempAdicionados = [];
 
-    function formatarData(d) {
-        if(!d) return '';
-        let [y, m, day] = d.split('-');
-        return `${day}/${m}/${y}`;
-    }
-
-    function abrirMenuPrincipal() {
-        document.getElementById('modal-menu-principal').style.display = 'flex';
+    function toggleDrawer(open) {
+        let overlay = document.getElementById('drawer-overlay');
+        let content = document.getElementById('drawer-content');
+        if (open) {
+            overlay.classList.add('active');
+            content.classList.add('active');
+        } else {
+            overlay.classList.remove('active');
+            content.classList.remove('active');
+        }
         lucide.createIcons();
     }
 
-    function fecharModal(id) {
-        document.getElementById(id).style.display = 'none';
+    function fecharModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    function fecharDrawerEIrParaReparacoes() {
+        toggleDrawer(false);
     }
 
     function abrirReparacaoProduto() {
-        fecharModal('modal-menu-principal');
+        toggleDrawer(false);
         renderTabelaPrecos();
         document.getElementById('modal-reparacao-produto').style.display = 'flex';
     }
 
     function abrirHistoricoMensal() {
-        fecharModal('modal-menu-principal');
+        toggleDrawer(false);
         renderHistoricoMensal();
         document.getElementById('modal-historico-mensal').style.display = 'flex';
+    }
+
+    function formatarData(d) {
+        if(!d) return '';
+        let [y, m, day] = d.split('-');
+        return `${day}/${m}/${y}`;
     }
 
     function carregarSelectReparos() {
@@ -498,7 +473,7 @@
             cont.innerHTML = itensTempAdicionados.map((item, idx) => {
                 totalBruto += item.subtotal;
                 return `
-                    <div class="item-adicionado">
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; padding:4px 0;">
                         <span><b>${item.qtd}x</b> ${item.nome}</span>
                         <span style="display:flex; align-items:center; gap:5px;">R$ ${item.subtotal.toFixed(2)} 
                             <button onclick="removerItemTemp(${idx})" style="border:none; background:none; color:red; cursor:pointer;"><i data-lucide="x" size="14"></i></button>
@@ -597,7 +572,7 @@
         let pagos = db.reparos.filter(x => x.pago);
         if(!pagos.length) return alert('Nenhum reparo está marcado como PAGO para dar baixa.');
 
-        let m = prompt('Digite o mês/ano de fechamento (ex: Janeiro/2026):', new Date().toLocaleDateString('pt-BR', {month:'long', year:'numeric'}));
+        let m = prompt('Digite o mês/ano de fechamento:', new Date().toLocaleDateString('pt-BR', {month:'long', year:'numeric'}));
         if(!m) return;
 
         let novosReparos = [];
@@ -672,34 +647,30 @@
             return `
             <div class="card-wrapper" id="wrapper-${i}">
                 <div class="actions-right">
-                    <button class="btn-swipe-action" style="color:#22c55e;" title="Enviar WhatsApp" onclick="enviarWhatsAppCliente(${i})">
+                    <button class="btn-swipe-action" style="color:#22c55e;" title="WhatsApp" onclick="enviarWhatsAppCliente(${i})">
                         <i data-lucide="message-circle" size="20"></i>
                     </button>
-
-                    <button class="btn-swipe-action" style="color:${x.pago ? '#16a34a' : '#eab308'};" title="Alterar Pagamento" onclick="alternarPago(${i})">
+                    <button class="btn-swipe-action" style="color:${x.pago ? '#16a34a' : '#eab308'};" title="Pagamento" onclick="alternarPago(${i})">
                         <i data-lucide="${x.pago ? 'check-circle-2' : 'arrow-right-left'}" size="20"></i>
                     </button>
-
                     <button class="btn-swipe-action" style="color:#3b82f6;" title="Editar" onclick="editar(${i})">
                         <i data-lucide="pencil" size="20"></i>
                     </button>
-
                     <button class="btn-swipe-action" style="color:#ef4444;" title="Excluir" onclick="deletar(${i})">
                         <i data-lucide="trash-2" size="20"></i>
                     </button>
                 </div>
 
                 <div class="card-registro" id="card-${i}">
-                    <div class="info-esq">
-                        <span class="data-linha"><i data-lucide="calendar" size="12"></i> ${formatarData(x.data)}</span>
-                        <span class="nome-linha"><i data-lucide="user" size="14"></i> ${x.cliente}</span>
-                        ${x.kite ? `<span class="kite-linha"><i data-lucide="wind" size="13"></i> ${x.kite}</span>` : ''}
-                        <span class="servico-linha"><i data-lucide="wrench" size="13"></i> ${x.ser}</span>
-                        ${x.pago ? `<span class="badge-pago"><i data-lucide="check" size="12"></i> PAGO</span>` : ''}
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <span style="font-size:10px; color:var(--text-muted);"><i data-lucide="calendar" size="12"></i> ${formatarData(x.data)}</span>
+                        <span style="font-size:15px; font-weight:800;"><i data-lucide="user" size="14"></i> ${x.cliente}</span>
+                        ${x.kite ? `<span style="font-size:12px; font-weight:700; color:var(--primary);"><i data-lucide="wind" size="13"></i> ${x.kite}</span>` : ''}
+                        <span style="font-size:12px; color:var(--text-muted);"><i data-lucide="wrench" size="13"></i> ${x.ser}</span>
                     </div>
-                    <div class="valor-dir">
-                        <span class="valor-verde">R$ ${(x.valorMeu || 0).toFixed(2)}</span>
-                        <span class="bruto-sub">(Bruto: R$ ${(x.bruto || 0).toFixed(2)})</span>
+                    <div style="text-align:right;">
+                        <span style="font-size:15px; font-weight:800; color:var(--primary);">R$ ${(x.valorMeu || 0).toFixed(2)}</span>
+                        <span style="font-size:10px; color:var(--text-muted); display:block;">(Bruto: R$ ${(x.bruto || 0).toFixed(2)})</span>
                     </div>
                 </div>
             </div>`;
@@ -715,37 +686,25 @@
         configurarGestosTouch();
     }
 
-    let startX = 0;
-    let currentX = 0;
+    let startX = 0, currentX = 0;
 
     function configurarGestosTouch() {
         let cards = document.querySelectorAll('.card-registro');
         cards.forEach((card) => {
-            card.addEventListener('touchstart', (e) => {
-                startX = e.touches[0].clientX;
-            });
-
+            card.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; });
             card.addEventListener('touchmove', (e) => {
                 currentX = e.touches[0].clientX;
                 let diff = currentX - startX;
-                
                 if(diff > 0) diff = 0;
                 if(diff < -220) diff = -220;
-
                 card.style.transform = `translateX(${diff}px)`;
             });
-
             card.addEventListener('touchend', (e) => {
                 let diff = currentX - startX;
                 card.style.transition = 'transform 0.2s ease-out';
-
-                if (diff < -60) {
-                    card.style.transform = 'translateX(-210px)';
-                } else {
-                    card.style.transform = 'translateX(0px)';
-                }
-                startX = 0;
-                currentX = 0;
+                if (diff < -60) card.style.transform = 'translateX(-210px)';
+                else card.style.transform = 'translateX(0px)';
+                startX = 0; currentX = 0;
             });
         });
     }
@@ -764,7 +723,7 @@
     function adicionarNovoTipoReparo() {
         let n = document.getElementById('cfg-nome').value;
         let p = parseFloat(document.getElementById('cfg-preco').value);
-        if(!n || isNaN(p)) return alert('Preencha o nome e o preço corretamente.');
+        if(!n || isNaN(p)) return alert('Preencha o nome e o preço.');
         
         db.tabelaPrecos.push({ nome: n, preco: p });
         localStorage.setItem(CHAVE, JSON.stringify(db));
@@ -788,13 +747,10 @@
             return;
         }
 
-        // Agrupar itens por Mês
         let mesesAgrupados = {};
         h.forEach(item => {
             let m = item.mes || 'Outros';
-            if (!mesesAgrupados[m]) {
-                mesesAgrupados[m] = { total: 0, itens: [] };
-            }
+            if (!mesesAgrupados[m]) mesesAgrupados[m] = { total: 0, itens: [] };
             mesesAgrupados[m].total += (item.valorMeu || 0);
             mesesAgrupados[m].itens.push(item);
         });
@@ -803,9 +759,9 @@
         for (let m in mesesAgrupados) {
             html += `
                 <div class="card-mes-historico">
-                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:6px; margin-bottom:8px;">
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px solid #e2e8f0; padding-bottom:6px; margin-bottom:8px;">
                         <b style="font-size:14px; text-transform:capitalize;">${m}</b>
-                        <span style="font-weight:bold; color:var(--accent-green);">R$ ${mesesAgrupados[m].total.toFixed(2)}</span>
+                        <span style="font-weight:bold; color:var(--primary);">R$ ${mesesAgrupados[m].total.toFixed(2)}</span>
                     </div>
                     ${mesesAgrupados[m].itens.map(x => `
                         <div style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">
@@ -815,7 +771,6 @@
                 </div>
             `;
         }
-
         cont.innerHTML = html;
     }
 
@@ -826,7 +781,7 @@
         let tot = 0;
         l.forEach(x => {
             tot += x.valorMeu || 0;
-            txt += `${formatarData(x.data)} - ${x.cliente} [Kite: ${x.kite||'N/A'}] (${x.ser}): R$ ${(x.valorMeu||0).toFixed(2)} ${x.pago ? '[PAGO]' : ''}\n`;
+            txt += `${formatarData(x.data)} - ${x.cliente} [Kite: ${x.kite||'N/A'}] (${x.ser}): R$ ${(x.valorMeu||0).toFixed(2)}\n`;
         });
         txt += `\n*TOTAL: R$ ${tot.toFixed(2)}*`;
         document.getElementById('conteudo-comprovante').innerText = txt;
@@ -849,8 +804,8 @@
             db = JSON.parse(ev.target.result);
             localStorage.setItem(CHAVE, JSON.stringify(db));
             render();
-            fecharModal('modal-menu-principal');
-            alert('Backup restaurado com sucesso!');
+            toggleDrawer(false);
+            alert('Backup restaurado!');
         };
         r.readAsText(e.target.files[0]);
     }
