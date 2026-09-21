@@ -227,7 +227,6 @@
     <div class="header-brand">
         <span>SISTEMA DE REPARAÇÃO</span>
     </div>
-    <!-- Botão de 3 Barras -->
     <button class="btn-menu-bars" onclick="abrirMenuOpcoes()"><i data-lucide="menu" size="24"></i></button>
 </header>
 
@@ -305,13 +304,13 @@
     <div class="modal-body">
         <h3 style="margin-top:0; text-align:center; margin-bottom:20px;">OPÇÕES DO SISTEMA</h3>
         
-        <button class="btn-menu-opcao" onclick="abrirReparacaoProduto()">
-            <span style="display:flex; align-items:center; gap:10px;"><i data-lucide="wrench" size="18"></i> Reparação Produto</span>
+        <button class="btn-menu-opcao" onclick="abrirHistoricoMensal()">
+            <span style="display:flex; align-items:center; gap:10px;"><i data-lucide="trending-up" size="18" style="color:#10b981;"></i> Ganhos & Histórico Mensal</span>
             <i data-lucide="chevron-right" size="18"></i>
         </button>
 
-        <button class="btn-menu-opcao" onclick="abrirHistoricoMensal()">
-            <span style="display:flex; align-items:center; gap:10px;"><i data-lucide="calendar" size="18"></i> Histórico por Mês</span>
+        <button class="btn-menu-opcao" onclick="abrirReparacaoProduto()">
+            <span style="display:flex; align-items:center; gap:10px;"><i data-lucide="wrench" size="18"></i> Reparação Produto</span>
             <i data-lucide="chevron-right" size="18"></i>
         </button>
 
@@ -352,11 +351,14 @@
     </div>
 </div>
 
-<!-- MODAL HISTÓRICO MENSAL -->
+<!-- MODAL HISTÓRICO MENSAL E GANHOS -->
 <div class="modal-overlay" id="modal-historico-mensal">
     <div class="modal-body">
-        <h3 style="margin-top:0; display:flex; align-items:center; gap:8px;"><i data-lucide="history"></i> Histórico por Mês</h3>
+        <h3 style="margin-top:0; display:flex; align-items:center; gap:8px;"><i data-lucide="trending-up" style="color:#10b981;"></i> Ganhos por Mês (Pagos)</h3>
+        <p style="font-size:11px; color:var(--text-muted); margin-top:-5px; margin-bottom:15px;">Abaixo constam os valores ganhos organizados por mês (somente trabalhos marcados como PAGOS):</p>
+        
         <div id="conteudo-historico-meses" style="max-height:350px; overflow-y:auto;"></div>
+        
         <button onclick="fecharModal('modal-historico-mensal'); abrirMenuOpcoes();" style="width:100%; padding:12px; background:#e2e8f0; border:none; border-radius:12px; font-weight:bold; margin-top:15px; cursor:pointer;">Voltar ao Menu</button>
     </div>
 </div>
@@ -400,6 +402,15 @@
         if(!d) return '';
         let [y, m, day] = d.split('-');
         return `${day}/${m}/${y}`;
+    }
+
+    function obterNomeMesAno(dataStr) {
+        if(!dataStr) return 'Mês Desconhecido';
+        let partes = dataStr.split('-');
+        let data = new Date(partes[0], partes[1] - 1, partes[2]);
+        let mes = data.toLocaleDateString('pt-BR', { month: 'long' });
+        let ano = data.getFullYear();
+        return `${mes.charAt(0).toUpperCase() + mes.slice(1)} / ${ano}`;
     }
 
     function abrirMenuOpcoes() {
@@ -739,17 +750,21 @@
     }
 
     function renderHistoricoMensal() {
-        let h = db.hist_reparos || [];
+        let ativosPagos = (db.reparos || []).filter(x => x.pago);
+        let arquivados = db.hist_reparos || [];
+        let todosPagos = [...ativosPagos, ...arquivados];
+
         let cont = document.getElementById('conteudo-historico-meses');
 
-        if (!h.length) {
-            cont.innerHTML = '<p style="font-size:12px; color:var(--text-muted); text-align:center;">Nenhum histórico encerrado.</p>';
+        if (!todosPagos.length) {
+            cont.innerHTML = '<p style="font-size:12px; color:var(--text-muted); text-align:center;">Nenhum ganho/serviço pago registrado ainda.</p>';
             return;
         }
 
         let mesesAgrupados = {};
-        h.forEach(item => {
-            let m = item.mes || 'Outros';
+
+        todosPagos.forEach(item => {
+            let m = item.mes || obterNomeMesAno(item.data);
             if (!mesesAgrupados[m]) mesesAgrupados[m] = { total: 0, itens: [] };
             mesesAgrupados[m].total += (item.valorMeu || 0);
             mesesAgrupados[m].itens.push(item);
@@ -760,12 +775,13 @@
             html += `
                 <div class="card-mes-historico">
                     <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:6px; margin-bottom:8px;">
-                        <b style="font-size:14px; text-transform:capitalize;">${m}</b>
-                        <span style="font-weight:bold; color:var(--accent-green);">R$ ${mesesAgrupados[m].total.toFixed(2)}</span>
+                        <b style="font-size:13px; text-transform:capitalize; color:var(--card-dark);">${m}</b>
+                        <span style="font-weight:800; font-size:14px; color:var(--accent-green);">R$ ${mesesAgrupados[m].total.toFixed(2)}</span>
                     </div>
                     ${mesesAgrupados[m].itens.map(x => `
-                        <div style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">
-                            • ${formatarData(x.data)}: <b>${x.cliente}</b> (${x.ser}) - R$ ${(x.valorMeu || 0).toFixed(2)}
+                        <div style="font-size:11px; color:var(--text-muted); margin-bottom:4px; display:flex; justify-content:space-between;">
+                            <span>• ${formatarData(x.data)}: <b>${x.cliente}</b> (${x.ser})</span>
+                            <b style="color:var(--text-dark);">R$ ${(x.valorMeu || 0).toFixed(2)}</b>
                         </div>
                     `).join('')}
                 </div>
