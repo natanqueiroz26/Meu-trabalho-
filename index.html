@@ -359,4 +359,474 @@
         
         <div id="conteudo-historico-meses" style="max-height:350px; overflow-y:auto;"></div>
         
-        <button onclick="fecharModal('modal-historico-mensal'); abrirMenuOpcoes();" style="width:100%; padding:12px; background:#e2e8f0; border:none; border-radius:12px; font-weight:bold
+        <button onclick="fecharModal('modal-historico-mensal'); abrirMenuOpcoes();" style="width:100%; padding:12px; background:#e2e8f0; border:none; border-radius:12px; font-weight:bold; margin-top:15px; cursor:pointer;">Voltar ao Menu</button>
+    </div>
+</div>
+
+<!-- MODAL COMPROVANTE -->
+<div class="modal-overlay" id="modal-comprovante">
+    <div class="modal-body">
+        <h3 style="margin-top:0; display:flex; align-items:center; gap:8px;"><i data-lucide="file-text"></i> Relatório</h3>
+        <div id="conteudo-comprovante" style="white-space: pre-wrap; font-size:12px; background:#f1f5f9; padding:10px; border-radius:10px;"></div>
+        <button id="btn-wpp" style="width:100%; background:#22c55e; color:white; border:none; padding:14px; border-radius:12px; font-weight:bold; margin-top:15px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">ENVIAR WHATSAPP</button>
+        <button onclick="fecharModal('modal-comprovante')" style="width:100%; background:#e2e8f0; border:none; padding:12px; border-radius:12px; font-weight:bold; margin-top:8px; cursor:pointer;">FECHAR</button>
+    </div>
+</div>
+
+<script>
+    const CHAVE = 'meu_trabalho_app_v5';
+    
+    const precosPadrao = [
+        { nome: "Rasgo", preco: 50 },
+        { nome: "Rasgo bladder grande", preco: 150 },
+        { nome: "Furo 1/2", preco: 50 },
+        { nome: "Colagem de válvula", preco: 50 }
+    ];
+
+    function initDB() {
+        let def = { reparos: [], hist_reparos: [], tabelaPrecos: precosPadrao };
+        let s = localStorage.getItem(CHAVE);
+        if(!s) return def;
+        try { 
+            let parsed = JSON.parse(s);
+            if(!parsed.tabelaPrecos) parsed.tabelaPrecos = precosPadrao;
+            return parsed;
+        } catch(e){ return def; }
+    }
+
+    var db = initDB();
+    var edicaoIdx = -1;
+    var itensTempAdicionados = [];
+
+    function formatarData(d) {
+        if(!d) return '';
+        let [y, m, day] = d.split('-');
+        return `${day}/${m}/${y}`;
+    }
+
+    function obterNomeMesAno(dataStr) {
+        if(!dataStr) return 'Mês Desconhecido';
+        let partes = dataStr.split('-');
+        let data = new Date(partes[0], partes[1] - 1, partes[2]);
+        let mes = data.toLocaleDateString('pt-BR', { month: 'long' });
+        let ano = data.getFullYear();
+        return `${mes.charAt(0).toUpperCase() + mes.slice(1)} / ${ano}`;
+    }
+
+    function abrirMenuOpcoes() {
+        document.getElementById('modal-menu-opcoes').style.display = 'flex';
+        lucide.createIcons();
+    }
+
+    function fecharModal(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+
+    function abrirReparacaoProduto() {
+        fecharModal('modal-menu-opcoes');
+        renderTabelaPrecos();
+        document.getElementById('modal-reparacao-produto').style.display = 'flex';
+    }
+
+    function abrirHistoricoMensal() {
+        fecharModal('modal-menu-opcoes');
+        renderHistoricoMensal();
+        document.getElementById('modal-historico-mensal').style.display = 'flex';
+    }
+
+    function carregarSelectReparos() {
+        let select = document.getElementById('f-sel-rep');
+        select.innerHTML = db.tabelaPrecos.map((item, idx) => 
+            `<option value="${idx}">${item.nome}</option>`
+        ).join('');
+
+        let selectQtd = document.getElementById('f-qtd');
+        let qtdsHtml = '';
+        for(let i = 1; i <= 11; i++) {
+            qtdsHtml += `<option value="${i}">${i}x</option>`;
+        }
+        selectQtd.innerHTML = qtdsHtml;
+    }
+
+    function incluirItemNaLista() {
+        let selIdx = document.getElementById('f-sel-rep').value;
+        let qtd = parseInt(document.getElementById('f-qtd').value);
+        let itemTabela = db.tabelaPrecos[selIdx];
+
+        if(itemTabela) {
+            let subtotal = itemTabela.preco * qtd;
+            itensTempAdicionados.push({
+                nome: itemTabela.nome,
+                qtd: qtd,
+                valorUnit: itemTabela.preco,
+                subtotal: subtotal
+            });
+            atualizarListaTempVisual();
+        }
+    }
+
+    function removerItemTemp(index) {
+        itensTempAdicionados.splice(index, 1);
+        atualizarListaTempVisual();
+    }
+
+    function atualizarListaTempVisual() {
+        let cont = document.getElementById('lista-itens-temp');
+        let totalBruto = 0;
+
+        if(itensTempAdicionados.length === 0) {
+            cont.innerHTML = `<p style="font-size:11px; color:var(--text-muted); margin:0; text-align:center;">Nenhum reparo incluído ainda.</p>`;
+        } else {
+            cont.innerHTML = itensTempAdicionados.map((item, idx) => {
+                totalBruto += item.subtotal;
+                return `
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; padding:4px 0; border-bottom:1px solid #edf2f7;">
+                        <span><b>${item.qtd}x</b> ${item.nome}</span>
+                        <span style="display:flex; align-items:center; gap:5px;">R$ ${item.subtotal.toFixed(2)} 
+                            <button onclick="removerItemTemp(${idx})" style="border:none; background:none; color:red; cursor:pointer;"><i data-lucide="x" size="14"></i></button>
+                        </span>
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        document.getElementById('f-bru').value = totalBruto.toFixed(2);
+    }
+
+    function abrirForm() {
+        carregarSelectReparos();
+        if (edicaoIdx === -1) {
+            itensTempAdicionados = [];
+            atualizarListaTempVisual();
+        }
+
+        let f = document.getElementById('form-adicionar');
+        document.getElementById('f-d').value = new Date().toISOString().split('T')[0];
+        document.getElementById('f-cli').value = '';
+        document.getElementById('f-kite').value = '';
+        document.getElementById('f-gas').value = 0;
+        f.style.display = 'block';
+    }
+
+    function fecharForm() {
+        document.getElementById('form-adicionar').style.display = 'none';
+        edicaoIdx = -1;
+    }
+
+    function salvar() {
+        let d = document.getElementById('f-d').value;
+        if(!d) return alert('Selecione a data');
+
+        let cliente = document.getElementById('f-cli').value || 'Cliente não informado';
+        let kite = document.getElementById('f-kite').value || 'Kite não informado';
+        let bruto = parseFloat(document.getElementById('f-bru').value) || 0;
+        let gasto = parseFloat(document.getElementById('f-gas').value) || 0;
+
+        let resumoServicos = '';
+        if (itensTempAdicionados.length > 0) {
+            resumoServicos = itensTempAdicionados.map(i => `${i.qtd}x ${i.nome}`).join(', ');
+        } else if (edicaoIdx >= 0 && db.reparos[edicaoIdx].ser) {
+            resumoServicos = db.reparos[edicaoIdx].ser;
+        } else {
+            resumoServicos = 'Reparo Avulso';
+        }
+
+        let reg = {
+            data: d,
+            cliente: cliente,
+            kite: kite,
+            ser: resumoServicos,
+            bruto: bruto,
+            gasto: gasto,
+            pago: false,
+            valorMeu: (bruto - gasto) / 2
+        };
+
+        if(edicaoIdx >= 0) {
+            reg.pago = db.reparos[edicaoIdx].pago || false;
+            db.reparos[edicaoIdx] = reg;
+        } else {
+            db.reparos.push(reg);
+        }
+
+        db.reparos.sort((a,b) => new Date(b.data) - new Date(a.data));
+        localStorage.setItem(CHAVE, JSON.stringify(db));
+        fecharForm();
+        render();
+    }
+
+    function alternarPago(i) {
+        db.reparos[i].pago = !db.reparos[i].pago;
+        localStorage.setItem(CHAVE, JSON.stringify(db));
+        render();
+    }
+
+    function enviarWhatsAppCliente(i) {
+        let x = db.reparos[i];
+        let txt = `*COMPROVANTE DE REPARAÇÃO*\n\n` +
+                  `👤 *Cliente:* ${x.cliente}\n` +
+                  `🪁 *Equipamento:* ${x.kite}\n` +
+                  `🛠️ *Serviço:* ${x.ser}\n` +
+                  `📅 *Data:* ${formatarData(x.data)}\n` +
+                  `💰 *Valor Total:* R$ ${(x.bruto||0).toFixed(2)}\n\n` +
+                  `Status: *${x.pago ? 'PAGO ✅' : 'PENDENTE ⏳'}*`;
+        
+        window.location.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`;
+    }
+
+    function fecharMes() {
+        let pagos = db.reparos.filter(x => x.pago);
+        if(!pagos.length) return alert('Nenhum reparo está marcado como PAGO para dar baixa.');
+
+        let m = prompt('Digite o mês/ano de fechamento (ex: Janeiro/2026):', new Date().toLocaleDateString('pt-BR', {month:'long', year:'numeric'}));
+        if(!m) return;
+
+        let novosReparos = [];
+        db.reparos.forEach(x => {
+            if(x.pago) {
+                x.mes = m;
+                db.hist_reparos.push(x);
+            } else {
+                novosReparos.push(x);
+            }
+        });
+
+        db.reparos = novosReparos;
+        localStorage.setItem(CHAVE, JSON.stringify(db));
+        render();
+    }
+
+    function deletar(i) {
+        if(confirm('Excluir este item permanentemente?')) {
+            db.reparos.splice(i, 1);
+            localStorage.setItem(CHAVE, JSON.stringify(db));
+            render();
+        }
+    }
+
+    function editar(i) {
+        let item = db.reparos[i];
+        edicaoIdx = i;
+
+        let f = document.getElementById('form-adicionar');
+        carregarSelectReparos();
+
+        document.getElementById('f-d').value = item.data;
+        document.getElementById('f-cli').value = item.cliente || '';
+        document.getElementById('f-kite').value = item.kite || '';
+        document.getElementById('f-bru').value = (item.bruto || 0).toFixed(2);
+        document.getElementById('f-gas').value = (item.gasto || 0).toFixed(2);
+
+        itensTempAdicionados = [];
+        if (item.ser) {
+            let partes = item.ser.split(', ');
+            partes.forEach(p => {
+                let match = p.match(/^(\d+)x\s+(.+)$/);
+                if (match) {
+                    let qtd = parseInt(match[1]);
+                    let nome = match[2];
+                    let itemTb = db.tabelaPrecos.find(t => t.nome === nome);
+                    let preco = itemTb ? itemTb.preco : 0;
+                    itensTempAdicionados.push({
+                        nome: nome,
+                        qtd: qtd,
+                        valorUnit: preco,
+                        subtotal: preco * qtd
+                    });
+                }
+            });
+        }
+
+        atualizarListaTempVisual();
+        f.style.display = 'block';
+    }
+
+    function render() {
+        let list = db.reparos || [];
+        let totalMeu = 0, totalBruto = 0, totalGasto = 0;
+
+        let html = list.map((x, i) => {
+            totalMeu += (x.valorMeu || 0);
+            totalBruto += (x.bruto || 0);
+            totalGasto += (x.gasto || 0);
+
+            return `
+            <div class="card-wrapper" id="wrapper-${i}">
+                <div class="actions-right">
+                    <button class="btn-swipe-action" style="color:#22c55e;" title="Enviar WhatsApp" onclick="enviarWhatsAppCliente(${i})">
+                        <i data-lucide="message-circle" size="20"></i>
+                    </button>
+
+                    <button class="btn-swipe-action" style="color:${x.pago ? '#16a34a' : '#eab308'};" title="Alterar Pagamento" onclick="alternarPago(${i})">
+                        <i data-lucide="${x.pago ? 'check-circle-2' : 'arrow-right-left'}" size="20"></i>
+                    </button>
+
+                    <button class="btn-swipe-action" style="color:#3b82f6;" title="Editar" onclick="editar(${i})">
+                        <i data-lucide="pencil" size="20"></i>
+                    </button>
+
+                    <button class="btn-swipe-action" style="color:#ef4444;" title="Excluir" onclick="deletar(${i})">
+                        <i data-lucide="trash-2" size="20"></i>
+                    </button>
+                </div>
+
+                <div class="card-registro" id="card-${i}">
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <span style="font-size:10px; color:var(--text-muted); font-weight:600;"><i data-lucide="calendar" size="12"></i> ${formatarData(x.data)}</span>
+                        <span style="font-size:15px; font-weight:800;"><i data-lucide="user" size="14"></i> ${x.cliente}</span>
+                        ${x.kite ? `<span style="font-size:12px; font-weight:700; color:var(--card-dark);"><i data-lucide="wind" size="13"></i> ${x.kite}</span>` : ''}
+                        <span style="font-size:12px; color:var(--text-muted);"><i data-lucide="wrench" size="13"></i> ${x.ser}</span>
+                        ${x.pago ? `<span style="background:#dcfce7; color:#15803d; font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; width:fit-content; margin-top:2px;">PAGO</span>` : ''}
+                    </div>
+                    <div style="text-align:right;">
+                        <span style="font-size:15px; font-weight:800; color:var(--accent-green);">R$ ${(x.valorMeu || 0).toFixed(2)}</span>
+                        <span style="font-size:10px; color:var(--text-muted); display:block; margin-top:2px;">(Bruto: R$ ${(x.bruto || 0).toFixed(2)})</span>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+
+        document.getElementById('lista-cards').innerHTML = html || '<p style="text-align:center; color:var(--text-muted); font-size:13px; margin-top:20px;">Nenhum reparo cadastrado.</p>';
+
+        document.getElementById('val-saldo-topo').innerText = `R$ ${totalMeu.toFixed(2)}`;
+        document.getElementById('val-bruto-topo').innerText = `R$ ${totalBruto.toFixed(2)}`;
+        document.getElementById('val-gasto-topo').innerText = `R$ ${totalGasto.toFixed(2)}`;
+
+        lucide.createIcons();
+        configurarGestosTouch();
+    }
+
+    let startX = 0, currentX = 0;
+
+    function configurarGestosTouch() {
+        let cards = document.querySelectorAll('.card-registro');
+        cards.forEach((card) => {
+            card.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; });
+            card.addEventListener('touchmove', (e) => {
+                currentX = e.touches[0].clientX;
+                let diff = currentX - startX;
+                if(diff > 0) diff = 0;
+                if(diff < -220) diff = -220;
+                card.style.transform = `translateX(${diff}px)`;
+            });
+            card.addEventListener('touchend', (e) => {
+                let diff = currentX - startX;
+                card.style.transition = 'transform 0.2s ease-out';
+                if (diff < -60) card.style.transform = 'translateX(-210px)';
+                else card.style.transform = 'translateX(0px)';
+                startX = 0; currentX = 0;
+            });
+        });
+    }
+
+    function renderTabelaPrecos() {
+        let cont = document.getElementById('lista-tabela-precos');
+        cont.innerHTML = db.tabelaPrecos.map((item, i) => `
+            <div class="item-tabela-preco">
+                <span><b>${item.nome}</b> - R$ ${item.preco.toFixed(2)}</span>
+                <button onclick="removerTipoReparo(${i})" style="border:none; background:none; color:red; cursor:pointer;"><i data-lucide="trash-2" size="14"></i></button>
+            </div>
+        `).join('');
+        lucide.createIcons();
+    }
+
+    function adicionarNovoTipoReparo() {
+        let n = document.getElementById('cfg-nome').value;
+        let p = parseFloat(document.getElementById('cfg-preco').value);
+        if(!n || isNaN(p)) return alert('Preencha o nome e o preço corretamente.');
+        
+        db.tabelaPrecos.push({ nome: n, preco: p });
+        localStorage.setItem(CHAVE, JSON.stringify(db));
+        document.getElementById('cfg-nome').value = '';
+        document.getElementById('cfg-preco').value = '';
+        renderTabelaPrecos();
+    }
+
+    function removerTipoReparo(i) {
+        db.tabelaPrecos.splice(i, 1);
+        localStorage.setItem(CHAVE, JSON.stringify(db));
+        renderTabelaPrecos();
+    }
+
+    function renderHistoricoMensal() {
+        let ativosPagos = (db.reparos || []).filter(x => x.pago);
+        let arquivados = db.hist_reparos || [];
+        let todosPagos = [...ativosPagos, ...arquivados];
+
+        let cont = document.getElementById('conteudo-historico-meses');
+
+        if (!todosPagos.length) {
+            cont.innerHTML = '<p style="font-size:12px; color:var(--text-muted); text-align:center;">Nenhum ganho/serviço pago registrado ainda.</p>';
+            return;
+        }
+
+        let mesesAgrupados = {};
+
+        todosPagos.forEach(item => {
+            let m = item.mes || obterNomeMesAno(item.data);
+            if (!mesesAgrupados[m]) mesesAgrupados[m] = { total: 0, itens: [] };
+            mesesAgrupados[m].total += (item.valorMeu || 0);
+            mesesAgrupados[m].itens.push(item);
+        });
+
+        let html = '';
+        for (let m in mesesAgrupados) {
+            html += `
+                <div class="card-mes-historico">
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:6px; margin-bottom:8px;">
+                        <b style="font-size:13px; text-transform:capitalize; color:var(--card-dark);">${m}</b>
+                        <span style="font-weight:800; font-size:14px; color:var(--accent-green);">R$ ${mesesAgrupados[m].total.toFixed(2)}</span>
+                    </div>
+                    ${mesesAgrupados[m].itens.map(x => `
+                        <div style="font-size:11px; color:var(--text-muted); margin-bottom:4px; display:flex; justify-content:space-between;">
+                            <span>• ${formatarData(x.data)}: <b>${x.cliente}</b> (${x.ser})</span>
+                            <b style="color:var(--text-dark);">R$ ${(x.valorMeu || 0).toFixed(2)}</b>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        cont.innerHTML = html;
+    }
+
+    function gerarRelatorio() {
+        let l = db.reparos || [];
+        if(!l.length) return alert('Sem dados para relatório');
+        let txt = `*RELATÓRIO - REPAROS*\n\n`;
+        let tot = 0;
+        l.forEach(x => {
+            tot += x.valorMeu || 0;
+            txt += `${formatarData(x.data)} - ${x.cliente} [Kite: ${x.kite||'N/A'}] (${x.ser}): R$ ${(x.valorMeu||0).toFixed(2)} ${x.pago ? '[PAGO]' : ''}\n`;
+        });
+        txt += `\n*TOTAL: R$ ${tot.toFixed(2)}*`;
+        document.getElementById('conteudo-comprovante').innerText = txt;
+        document.getElementById('modal-comprovante').style.display = 'flex';
+        document.getElementById('btn-wpp').onclick = () => {
+            window.location.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`;
+        };
+    }
+
+    function exportarBackup() {
+        let a = document.createElement('a');
+        a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
+        a.download = `backup_reparos.json`;
+        a.click();
+    }
+
+    function importarBackup(e) {
+        let r = new FileReader();
+        r.onload = (ev) => {
+            db = JSON.parse(ev.target.result);
+            localStorage.setItem(CHAVE, JSON.stringify(db));
+            render();
+            fecharModal('modal-menu-opcoes');
+            alert('Backup restaurado com sucesso!');
+        };
+        r.readAsText(e.target.files[0]);
+    }
+
+    render();
+</script>
+</body>
+</html> 
