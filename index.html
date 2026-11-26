@@ -26,13 +26,11 @@
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         
         body { 
-            margin: 0; 
+            margin: 0 auto; 
             background: var(--bg); 
             color: var(--text-dark); 
-            padding: 15px; 
+            padding: 15px 15px 40px 15px; 
             max-width: 480px; 
-            margin: 0 auto;
-            padding-bottom: 40px;
             overflow-x: hidden;
         }
 
@@ -185,7 +183,19 @@
             transition: transform 0.2s ease-out;
             touch-action: pan-y;
             border-radius: 18px;
+            border: 1px solid var(--border-color);
         }
+
+        .badge-status {
+            font-size: 10px;
+            font-weight: 800;
+            padding: 4px 8px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-top: 6px;
+        }
+        .badge-pago { background: #d1fae5; color: #065f46; }
+        .badge-pendente { background: #fef3c7; color: #92400e; }
 
         .caixa-form { background: white; padding: 20px; border-radius: 20px; margin-bottom: 20px; border: 1px solid var(--border-color); display: none; }
         label { display: block; margin-bottom: 5px; font-size: 10px; font-weight: 800; color: var(--text-muted); }
@@ -252,7 +262,6 @@
     <button class="btn-baixa" onclick="fecharMes()"><i data-lucide="check-check" size="16"></i> BAIXA GERAL</button>
 </div>
 
-<!-- Form de Inclusão/Edição -->
 <div class="caixa-form" id="form-adicionar">
     <label>Data</label>
     <input type="date" id="f-d">
@@ -299,7 +308,6 @@
 
 <div id="lista-cards"></div>
 
-<!-- MODAL AO ABRIR AS 3 BARRAS -->
 <div class="modal-overlay" id="modal-menu-opcoes">
     <div class="modal-body">
         <h3 style="margin-top:0; text-align:center; margin-bottom:20px;">OPÇÕES DO SISTEMA</h3>
@@ -329,7 +337,6 @@
     </div>
 </div>
 
-<!-- MODAL REPARAÇÃO PRODUTO (Cadastrar Tipos de Reparo) -->
 <div class="modal-overlay" id="modal-reparacao-produto">
     <div class="modal-body">
         <h3 style="margin-top:0; text-align:center; display:flex; align-items:center; justify-content:center; gap:8px;">
@@ -351,7 +358,6 @@
     </div>
 </div>
 
-<!-- MODAL HISTÓRICO MENSAL E GANHOS -->
 <div class="modal-overlay" id="modal-historico-mensal">
     <div class="modal-body">
         <h3 style="margin-top:0; display:flex; align-items:center; gap:8px;"><i data-lucide="trending-up" style="color:#10b981;"></i> Ganhos por Mês (Pagos)</h3>
@@ -363,7 +369,6 @@
     </div>
 </div>
 
-<!-- MODAL COMPROVANTE -->
 <div class="modal-overlay" id="modal-comprovante">
     <div class="modal-body">
         <h3 style="margin-top:0; display:flex; align-items:center; gap:8px;"><i data-lucide="file-text"></i> Relatório</h3>
@@ -390,6 +395,14 @@
         try { 
             let parsed = JSON.parse(s);
             if(!parsed.tabelaPrecos) parsed.tabelaPrecos = precosPadrao;
+            if(!parsed.hist_reparos) parsed.hist_reparos = [];
+            if(Array.isArray(parsed.reparos)) {
+                const total = parsed.reparos.length;
+                parsed.reparos = parsed.reparos.map((r, i) => ({
+                    ...r,
+                    criadoEm: typeof r.criadoEm === 'number' ? r.criadoEm : (total - i)
+                }));
+            }
             return parsed;
         } catch(e){ return def; }
     }
@@ -397,6 +410,14 @@
     var db = initDB();
     var edicaoIdx = -1;
     var itensTempAdicionados = [];
+
+    function salvarDB() {
+        localStorage.setItem(CHAVE, JSON.stringify(db));
+    }
+
+    function formatarMoeda(v) {
+        return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
 
     function formatarData(d) {
         if(!d) return '';
@@ -426,18 +447,52 @@
         fecharModal('modal-menu-opcoes');
         renderTabelaPrecos();
         document.getElementById('modal-reparacao-produto').style.display = 'flex';
+        lucide.createIcons();
     }
 
     function abrirHistoricoMensal() {
         fecharModal('modal-menu-opcoes');
         renderHistoricoMensal();
         document.getElementById('modal-historico-mensal').style.display = 'flex';
+        lucide.createIcons();
+    }
+
+    function abrirForm(idx = -1) {
+        edicaoIdx = idx;
+        carregarSelectReparos();
+        const form = document.getElementById('form-adicionar');
+        form.style.display = 'block';
+
+        if (idx >= 0) {
+            const item = db.reparos[idx];
+            document.getElementById('f-d').value = item.data || '';
+            document.getElementById('f-cli').value = item.cliente || '';
+            document.getElementById('f-kite').value = item.kite || '';
+            document.getElementById('f-bru').value = Number(item.bruto || 0).toFixed(2);
+            document.getElementById('f-gas').value = Number(item.gasto || 0).toFixed(2);
+            itensTempAdicionados = Array.isArray(item.itens) ? [...item.itens] : [];
+        } else {
+            document.getElementById('f-d').value = new Date().toISOString().split('T')[0];
+            document.getElementById('f-cli').value = '';
+            document.getElementById('f-kite').value = '';
+            document.getElementById('f-bru').value = '0.00';
+            document.getElementById('f-gas').value = '0';
+            itensTempAdicionados = [];
+        }
+        atualizarListaTempVisual(idx < 0);
+        lucide.createIcons();
+    }
+
+    function fecharForm() {
+        document.getElementById('form-adicionar').style.display = 'none';
+        edicaoIdx = -1;
+        itensTempAdicionados = [];
     }
 
     function carregarSelectReparos() {
         let select = document.getElementById('f-sel-rep');
         select.innerHTML = db.tabelaPrecos.map((item, idx) => 
-            `<option value="${idx}">${item.nome}</option>`
+            `<option value="${idx}">${item.nome} (${formatarMoeda(item.preco)})</option>`
         ).join('');
 
         let selectQtd = document.getElementById('f-qtd');
@@ -461,16 +516,16 @@
                 valorUnit: itemTabela.preco,
                 subtotal: subtotal
             });
-            atualizarListaTempVisual();
+            atualizarListaTempVisual(true);
         }
     }
 
     function removerItemTemp(index) {
         itensTempAdicionados.splice(index, 1);
-        atualizarListaTempVisual();
+        atualizarListaTempVisual(true);
     }
 
-    function atualizarListaTempVisual() {
+    function atualizarListaTempVisual(recalcularBruto = false) {
         let cont = document.getElementById('lista-itens-temp');
         let totalBruto = 0;
 
@@ -478,355 +533,292 @@
             cont.innerHTML = `<p style="font-size:11px; color:var(--text-muted); margin:0; text-align:center;">Nenhum reparo incluído ainda.</p>`;
         } else {
             cont.innerHTML = itensTempAdicionados.map((item, idx) => {
-                totalBruto += item.subtotal;
+                totalBruto += Number(item.subtotal || 0);
                 return `
                     <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; padding:4px 0; border-bottom:1px solid #edf2f7;">
                         <span><b>${item.qtd}x</b> ${item.nome}</span>
-                        <span style="display:flex; align-items:center; gap:5px;">R$ ${item.subtotal.toFixed(2)} 
-                            <button onclick="removerItemTemp(${idx})" style="border:none; background:none; color:red; cursor:pointer;"><i data-lucide="x" size="14"></i></button>
+                        <span style="display:flex; align-items:center; gap:6px;">R$ ${Number(item.subtotal).toFixed(2)} 
+                            <button type="button" onclick="removerItemTemp(${idx})" style="border:none; background:none; color:red; cursor:pointer; padding:0;"><i data-lucide="x" size="14"></i></button>
                         </span>
                     </div>
                 `;
             }).join('');
-            lucide.createIcons();
         }
 
-        document.getElementById('f-bru').value = totalBruto.toFixed(2);
-    }
-
-    function abrirForm() {
-        carregarSelectReparos();
-        if (edicaoIdx === -1) {
-            itensTempAdicionados = [];
-            atualizarListaTempVisual();
+        if (recalcularBruto && itensTempAdicionados.length > 0) {
+            document.getElementById('f-bru').value = totalBruto.toFixed(2);
         }
-
-        let f = document.getElementById('form-adicionar');
-        document.getElementById('f-d').value = new Date().toISOString().split('T')[0];
-        document.getElementById('f-cli').value = '';
-        document.getElementById('f-kite').value = '';
-        document.getElementById('f-gas').value = 0;
-        f.style.display = 'block';
-    }
-
-    function fecharForm() {
-        document.getElementById('form-adicionar').style.display = 'none';
-        edicaoIdx = -1;
+        lucide.createIcons();
     }
 
     function salvar() {
-        let d = document.getElementById('f-d').value;
-        if(!d) return alert('Selecione a data');
+        const data = document.getElementById('f-d').value;
+        const cliente = document.getElementById('f-cli').value.trim();
+        const kite = document.getElementById('f-kite').value.trim();
+        const bruto = parseFloat(document.getElementById('f-bru').value) || 0;
+        const gasto = parseFloat(document.getElementById('f-gas').value) || 0;
 
-        let cliente = document.getElementById('f-cli').value || 'Cliente não informado';
-        let kite = document.getElementById('f-kite').value || 'Kite não informado';
-        let bruto = parseFloat(document.getElementById('f-bru').value) || 0;
-        let gasto = parseFloat(document.getElementById('f-gas').value) || 0;
-
-        let resumoServicos = '';
-        if (itensTempAdicionados.length > 0) {
-            resumoServicos = itensTempAdicionados.map(i => `${i.qtd}x ${i.nome}`).join(', ');
-        } else if (edicaoIdx >= 0 && db.reparos[edicaoIdx].ser) {
-            resumoServicos = db.reparos[edicaoIdx].ser;
-        } else {
-            resumoServicos = 'Reparo Avulso';
+        if (!cliente) {
+            alert('Informe o nome do cliente.');
+            return;
         }
 
-        let reg = {
-            data: d,
-            cliente: cliente,
-            kite: kite,
-            ser: resumoServicos,
-            bruto: bruto,
-            gasto: gasto,
-            pago: false,
-            valorMeu: (bruto - gasto) / 2
+        const registro = {
+            data,
+            cliente,
+            kite,
+            itens: [...itensTempAdicionados],
+            bruto,
+            gasto,
+            pago: edicaoIdx >= 0 ? Boolean(db.reparos[edicaoIdx].pago) : false,
+            criadoEm: edicaoIdx >= 0 ? (db.reparos[edicaoIdx].criadoEm || Date.now()) : Date.now()
         };
 
-        if(edicaoIdx >= 0) {
-            reg.pago = db.reparos[edicaoIdx].pago || false;
-            db.reparos[edicaoIdx] = reg;
+        if (edicaoIdx >= 0) {
+            db.reparos[edicaoIdx] = registro;
         } else {
-            db.reparos.push(reg);
+            db.reparos.unshift(registro);
         }
 
-        db.reparos.sort((a,b) => new Date(b.data) - new Date(a.data));
-        localStorage.setItem(CHAVE, JSON.stringify(db));
+        salvarDB();
         fecharForm();
         render();
     }
 
-    function alternarPago(i) {
-        db.reparos[i].pago = !db.reparos[i].pago;
-        localStorage.setItem(CHAVE, JSON.stringify(db));
+    function obterReparosOrdenados() {
+        return db.reparos
+            .map((item, idxOriginal) => ({ item, idxOriginal }))
+            .sort((a, b) => {
+                const dataA = a.item.data || '';
+                const dataB = b.item.data || '';
+                if (dataA !== dataB) {
+                    return dataB.localeCompare(dataA);
+                }
+                return (b.item.criadoEm || 0) - (a.item.criadoEm || 0);
+            });
+    }
+
+    function alternarPago(idx) {
+        if (!db.reparos[idx]) return;
+        db.reparos[idx].pago = !db.reparos[idx].pago;
+        salvarDB();
         render();
     }
 
-    function enviarWhatsAppCliente(i) {
-        let x = db.reparos[i];
-        let txt = `*COMPROVANTE DE REPARAÇÃO*\n\n` +
-                  `👤 *Cliente:* ${x.cliente}\n` +
-                  `🪁 *Equipamento:* ${x.kite}\n` +
-                  `🛠️ *Serviço:* ${x.ser}\n` +
-                  `📅 *Data:* ${formatarData(x.data)}\n` +
-                  `💰 *Valor Total:* R$ ${(x.bruto||0).toFixed(2)}\n\n` +
-                  `Status: *${x.pago ? 'PAGO ✅' : 'PENDENTE ⏳'}*`;
-        
-        window.location.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`;
+    function excluirReparo(idx) {
+        if (!confirm('Excluir este registro?')) return;
+        db.reparos.splice(idx, 1);
+        salvarDB();
+        render();
     }
 
     function fecharMes() {
-        let pagos = db.reparos.filter(x => x.pago);
-        if(!pagos.length) return alert('Nenhum reparo está marcado como PAGO para dar baixa.');
+        const pagos = db.reparos.filter(r => r.pago);
+        if (pagos.length === 0) {
+            alert('Nenhum reparo marcado como PAGO para dar baixa.');
+            return;
+        }
+        if (!confirm(`Mover ${pagos.length} reparo(s) pago(s) para o histórico mensal?`)) return;
 
-        let m = prompt('Digite o mês/ano de fechamento (ex: Janeiro/2026):', new Date().toLocaleDateString('pt-BR', {month:'long', year:'numeric'}));
-        if(!m) return;
-
-        let novosReparos = [];
-        db.reparos.forEach(x => {
-            if(x.pago) {
-                x.mes = m;
-                db.hist_reparos.push(x);
-            } else {
-                novosReparos.push(x);
-            }
-        });
-
-        db.reparos = novosReparos;
-        localStorage.setItem(CHAVE, JSON.stringify(db));
+        const pendentes = db.reparos.filter(r => !r.pago);
+        db.hist_reparos.push(...pagos);
+        db.reparos = pendentes;
+        salvarDB();
         render();
     }
 
-    function deletar(i) {
-        if(confirm('Excluir este item permanentemente?')) {
-            db.reparos.splice(i, 1);
-            localStorage.setItem(CHAVE, JSON.stringify(db));
-            render();
-        }
-    }
-
-    function editar(i) {
-        let item = db.reparos[i];
-        edicaoIdx = i;
-
-        let f = document.getElementById('form-adicionar');
-        carregarSelectReparos();
-
-        document.getElementById('f-d').value = item.data;
-        document.getElementById('f-cli').value = item.cliente || '';
-        document.getElementById('f-kite').value = item.kite || '';
-        document.getElementById('f-bru').value = (item.bruto || 0).toFixed(2);
-        document.getElementById('f-gas').value = (item.gasto || 0).toFixed(2);
-
-        itensTempAdicionados = [];
-        if (item.ser) {
-            let partes = item.ser.split(', ');
-            partes.forEach(p => {
-                let match = p.match(/^(\d+)x\s+(.+)$/);
-                if (match) {
-                    let qtd = parseInt(match[1]);
-                    let nome = match[2];
-                    let itemTb = db.tabelaPrecos.find(t => t.nome === nome);
-                    let preco = itemTb ? itemTb.preco : 0;
-                    itensTempAdicionados.push({
-                        nome: nome,
-                        qtd: qtd,
-                        valorUnit: preco,
-                        subtotal: preco * qtd
-                    });
-                }
-            });
-        }
-
-        atualizarListaTempVisual();
-        f.style.display = 'block';
-    }
-
     function render() {
-        let list = db.reparos || [];
-        let totalMeu = 0, totalBruto = 0, totalGasto = 0;
+        let brutoTotal = 0;
+        let gastoTotal = 0;
+        let saldoLiquido = 0;
 
-        let html = list.map((x, i) => {
-            totalMeu += (x.valorMeu || 0);
-            totalBruto += (x.bruto || 0);
-            totalGasto += (x.gasto || 0);
+        db.reparos.forEach(r => {
+            const b = Number(r.bruto || 0);
+            const g = Number(r.gasto || 0);
+            brutoTotal += b;
+            gastoTotal += g;
+            saldoLiquido += (b - g);
+        });
+
+        document.getElementById('val-saldo-topo').textContent = formatarMoeda(saldoLiquido);
+        document.getElementById('val-bruto-topo').textContent = `R$ ${brutoTotal.toFixed(2)}`;
+        document.getElementById('val-gasto-topo').textContent = `R$ ${gastoTotal.toFixed(2)}`;
+
+        const lista = document.getElementById('lista-cards');
+        if (db.reparos.length === 0) {
+            lista.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:13px; margin-top:24px;">Nenhum reparo registrado.</p>`;
+            lucide.createIcons();
+            return;
+        }
+
+        const ordenados = obterReparosOrdenados();
+
+        lista.innerHTML = ordenados.map(({ item: r, idxOriginal }) => {
+            const liquido = Number(r.bruto || 0) - Number(r.gasto || 0);
+            const resumoItens = Array.isArray(r.itens) && r.itens.length
+                ? r.itens.map(it => `${it.qtd}x ${it.nome}`).join(', ')
+                : 'Reparo avulso';
 
             return `
-            <div class="card-wrapper" id="wrapper-${i}">
-                <div class="actions-right">
-                    <button class="btn-swipe-action" style="color:#22c55e;" title="Enviar WhatsApp" onclick="enviarWhatsAppCliente(${i})">
-                        <i data-lucide="message-circle" size="20"></i>
-                    </button>
-
-                    <button class="btn-swipe-action" style="color:${x.pago ? '#16a34a' : '#eab308'};" title="Alterar Pagamento" onclick="alternarPago(${i})">
-                        <i data-lucide="${x.pago ? 'check-circle-2' : 'arrow-right-left'}" size="20"></i>
-                    </button>
-
-                    <button class="btn-swipe-action" style="color:#3b82f6;" title="Editar" onclick="editar(${i})">
-                        <i data-lucide="pencil" size="20"></i>
-                    </button>
-
-                    <button class="btn-swipe-action" style="color:#ef4444;" title="Excluir" onclick="deletar(${i})">
-                        <i data-lucide="trash-2" size="20"></i>
-                    </button>
-                </div>
-
-                <div class="card-registro" id="card-${i}">
-                    <div style="display:flex; flex-direction:column; gap:4px;">
-                        <span style="font-size:10px; color:var(--text-muted); font-weight:600;"><i data-lucide="calendar" size="12"></i> ${formatarData(x.data)}</span>
-                        <span style="font-size:15px; font-weight:800;"><i data-lucide="user" size="14"></i> ${x.cliente}</span>
-                        ${x.kite ? `<span style="font-size:12px; font-weight:700; color:var(--card-dark);"><i data-lucide="wind" size="13"></i> ${x.kite}</span>` : ''}
-                        <span style="font-size:12px; color:var(--text-muted);"><i data-lucide="wrench" size="13"></i> ${x.ser}</span>
-                        ${x.pago ? `<span style="background:#dcfce7; color:#15803d; font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; width:fit-content; margin-top:2px;">PAGO</span>` : ''}
+                <div class="card-wrapper">
+                    <div class="actions-right">
+                        <button class="btn-swipe-action" onclick="alternarPago(${idxOriginal})" title="Alternar Pago/Pendente"><i data-lucide="check" size="16"></i></button>
+                        <button class="btn-swipe-action" onclick="abrirForm(${idxOriginal})" title="Editar"><i data-lucide="pencil" size="16"></i></button>
+                        <button class="btn-swipe-action" onclick="excluirReparo(${idxOriginal})" title="Excluir"><i data-lucide="trash-2" size="16"></i></button>
                     </div>
-                    <div style="text-align:right;">
-                        <span style="font-size:15px; font-weight:800; color:var(--accent-green);">R$ ${(x.valorMeu || 0).toFixed(2)}</span>
-                        <span style="font-size:10px; color:var(--text-muted); display:block; margin-top:2px;">(Bruto: R$ ${(x.bruto || 0).toFixed(2)})</span>
+                    <div class="card-registro">
+                        <div>
+                            <div style="font-weight:800; font-size:14px;">${r.cliente}</div>
+                            <div style="font-size:12px; color:var(--text-muted);">${r.kite || 'Sem equipamento'} • ${formatarData(r.data)}</div>
+                            <div style="font-size:11px; color:#475569; margin-top:4px;">${resumoItens}</div>
+                            <span class="badge-status ${r.pago ? 'badge-pago' : 'badge-pendente'}">${r.pago ? 'PAGO' : 'PENDENTE'}</span>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-weight:800; font-size:15px; color:var(--card-dark);">${formatarMoeda(r.bruto)}</div>
+                            <div style="font-size:11px; color:var(--text-muted);">Peças: ${formatarMoeda(r.gasto)}</div>
+                            <div style="font-size:11px; font-weight:700; color:var(--accent-green);">Líq: ${formatarMoeda(liquido)}</div>
+                        </div>
                     </div>
                 </div>
-            </div>`;
+            `;
         }).join('');
 
-        document.getElementById('lista-cards').innerHTML = html || '<p style="text-align:center; color:var(--text-muted); font-size:13px; margin-top:20px;">Nenhum reparo cadastrado.</p>';
-
-        document.getElementById('val-saldo-topo').innerText = `R$ ${totalMeu.toFixed(2)}`;
-        document.getElementById('val-bruto-topo').innerText = `R$ ${totalBruto.toFixed(2)}`;
-        document.getElementById('val-gasto-topo').innerText = `R$ ${totalGasto.toFixed(2)}`;
-
         lucide.createIcons();
-        configurarGestosTouch();
     }
 
-    let startX = 0, currentX = 0;
+    function adicionarNovoTipoReparo() {
+        const nome = document.getElementById('cfg-nome').value.trim();
+        const preco = parseFloat(document.getElementById('cfg-preco').value);
+        if (!nome || isNaN(preco) || preco < 0) {
+            alert('Preencha nome e preço unitário válido.');
+            return;
+        }
+        db.tabelaPrecos.push({ nome, preco });
+        salvarDB();
+        document.getElementById('cfg-nome').value = '';
+        document.getElementById('cfg-preco').value = '';
+        renderTabelaPrecos();
+        carregarSelectReparos();
+    }
 
-    function configurarGestosTouch() {
-        let cards = document.querySelectorAll('.card-registro');
-        cards.forEach((card) => {
-            card.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; });
-            card.addEventListener('touchmove', (e) => {
-                currentX = e.touches[0].clientX;
-                let diff = currentX - startX;
-                if(diff > 0) diff = 0;
-                if(diff < -220) diff = -220;
-                card.style.transform = `translateX(${diff}px)`;
-            });
-            card.addEventListener('touchend', (e) => {
-                let diff = currentX - startX;
-                card.style.transition = 'transform 0.2s ease-out';
-                if (diff < -60) card.style.transform = 'translateX(-210px)';
-                else card.style.transform = 'translateX(0px)';
-                startX = 0; currentX = 0;
-            });
-        });
+    function removerTipoReparo(idx) {
+        db.tabelaPrecos.splice(idx, 1);
+        salvarDB();
+        renderTabelaPrecos();
+        carregarSelectReparos();
     }
 
     function renderTabelaPrecos() {
-        let cont = document.getElementById('lista-tabela-precos');
-        cont.innerHTML = db.tabelaPrecos.map((item, i) => `
+        const cont = document.getElementById('lista-tabela-precos');
+        if (!db.tabelaPrecos.length) {
+            cont.innerHTML = `<p style="font-size:12px; color:var(--text-muted);">Nenhum tipo cadastrado.</p>`;
+            return;
+        }
+        cont.innerHTML = db.tabelaPrecos.map((item, idx) => `
             <div class="item-tabela-preco">
-                <span><b>${item.nome}</b> - R$ ${item.preco.toFixed(2)}</span>
-                <button onclick="removerTipoReparo(${i})" style="border:none; background:none; color:red; cursor:pointer;"><i data-lucide="trash-2" size="14"></i></button>
+                <span><b>${item.nome}</b> — ${formatarMoeda(item.preco)}</span>
+                <button onclick="removerTipoReparo(${idx})" style="border:none; background:none; color:#ef4444; cursor:pointer;"><i data-lucide="trash-2" size="15"></i></button>
             </div>
         `).join('');
         lucide.createIcons();
     }
 
-    function adicionarNovoTipoReparo() {
-        let n = document.getElementById('cfg-nome').value;
-        let p = parseFloat(document.getElementById('cfg-preco').value);
-        if(!n || isNaN(p)) return alert('Preencha o nome e o preço corretamente.');
-        
-        db.tabelaPrecos.push({ nome: n, preco: p });
-        localStorage.setItem(CHAVE, JSON.stringify(db));
-        document.getElementById('cfg-nome').value = '';
-        document.getElementById('cfg-preco').value = '';
-        renderTabelaPrecos();
-    }
-
-    function removerTipoReparo(i) {
-        db.tabelaPrecos.splice(i, 1);
-        localStorage.setItem(CHAVE, JSON.stringify(db));
-        renderTabelaPrecos();
-    }
-
     function renderHistoricoMensal() {
-        let ativosPagos = (db.reparos || []).filter(x => x.pago);
-        let arquivados = db.hist_reparos || [];
-        let todosPagos = [...ativosPagos, ...arquivados];
+        const cont = document.getElementById('conteudo-historico-meses');
+        const todosPagos = [
+            ...db.reparos.filter(r => r.pago),
+            ...db.hist_reparos
+        ];
 
-        let cont = document.getElementById('conteudo-historico-meses');
-
-        if (!todosPagos.length) {
-            cont.innerHTML = '<p style="font-size:12px; color:var(--text-muted); text-align:center;">Nenhum ganho/serviço pago registrado ainda.</p>';
+        if (todosPagos.length === 0) {
+            cont.innerHTML = `<p style="font-size:12px; color:var(--text-muted); text-align:center;">Nenhum ganho pago registrado ainda.</p>`;
             return;
         }
 
-        let mesesAgrupados = {};
-
-        todosPagos.forEach(item => {
-            let m = item.mes || obterNomeMesAno(item.data);
-            if (!mesesAgrupados[m]) mesesAgrupados[m] = { total: 0, itens: [] };
-            mesesAgrupados[m].total += (item.valorMeu || 0);
-            mesesAgrupados[m].itens.push(item);
+        const grupos = {};
+        todosPagos.forEach(r => {
+            const chaveMes = obterNomeMesAno(r.data);
+            if (!grupos[chaveMes]) grupos[chaveMes] = { bruto: 0, gasto: 0, qtd: 0 };
+            grupos[chaveMes].bruto += Number(r.bruto || 0);
+            grupos[chaveMes].gasto += Number(r.gasto || 0);
+            grupos[chaveMes].qtd += 1;
         });
 
-        let html = '';
-        for (let m in mesesAgrupados) {
-            html += `
+        cont.innerHTML = Object.entries(grupos).map(([mes, info]) => {
+            const liq = info.bruto - info.gasto;
+            return `
                 <div class="card-mes-historico">
-                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:6px; margin-bottom:8px;">
-                        <b style="font-size:13px; text-transform:capitalize; color:var(--card-dark);">${m}</b>
-                        <span style="font-weight:800; font-size:14px; color:var(--accent-green);">R$ ${mesesAgrupados[m].total.toFixed(2)}</span>
+                    <div style="display:flex; justify-content:space-between; font-weight:800; font-size:13px; margin-bottom:4px;">
+                        <span>${mes}</span>
+                        <span style="color:var(--accent-green);">${formatarMoeda(liq)}</span>
                     </div>
-                    ${mesesAgrupados[m].itens.map(x => `
-                        <div style="font-size:11px; color:var(--text-muted); margin-bottom:4px; display:flex; justify-content:space-between;">
-                            <span>• ${formatarData(x.data)}: <b>${x.cliente}</b> (${x.ser})</span>
-                            <b style="color:var(--text-dark);">R$ ${(x.valorMeu || 0).toFixed(2)}</b>
-                        </div>
-                    `).join('')}
+                    <div style="font-size:11px; color:var(--text-muted);">
+                        ${info.qtd} serviço(s) • Bruto: ${formatarMoeda(info.bruto)} • Peças: ${formatarMoeda(info.gasto)}
+                    </div>
                 </div>
             `;
-        }
-        cont.innerHTML = html;
+        }).join('');
     }
 
     function gerarRelatorio() {
-        let l = db.reparos || [];
-        if(!l.length) return alert('Sem dados para relatório');
-        let txt = `*RELATÓRIO - REPAROS*\n\n`;
-        let tot = 0;
-        l.forEach(x => {
-            tot += x.valorMeu || 0;
-            txt += `${formatarData(x.data)} - ${x.cliente} [Kite: ${x.kite||'N/A'}] (${x.ser}): R$ ${(x.valorMeu||0).toFixed(2)} ${x.pago ? '[PAGO]' : ''}\n`;
+        const ordenados = obterReparosOrdenados();
+        const linhas = ordenados.map(({ item: r }, i) => {
+            const status = r.pago ? 'PAGO' : 'PENDENTE';
+            return `${i + 1}. ${r.cliente} (${r.kite || 'Equipamento'}) - ${formatarMoeda(r.bruto)} [${status}]`;
         });
-        txt += `\n*TOTAL: R$ ${tot.toFixed(2)}*`;
-        document.getElementById('conteudo-comprovante').innerText = txt;
-        document.getElementById('modal-comprovante').style.display = 'flex';
+        const texto = linhas.length
+            ? `RELATÓRIO DE REPAROS\n\n${linhas.join('\n')}`
+            : 'Nenhum reparo ativo no momento.';
+
+        document.getElementById('conteudo-comprovante').textContent = texto;
         document.getElementById('btn-wpp').onclick = () => {
-            window.location.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
         };
+        document.getElementById('modal-comprovante').style.display = 'flex';
+        lucide.createIcons();
     }
 
     function exportarBackup() {
-        let a = document.createElement('a');
-        a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
-        a.download = `backup_reparos.json`;
+        const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `backup_reparos_${new Date().toISOString().slice(0, 10)}.json`;
         a.click();
+        URL.revokeObjectURL(url);
     }
 
-    function importarBackup(e) {
-        let r = new FileReader();
-        r.onload = (ev) => {
-            db = JSON.parse(ev.target.result);
-            localStorage.setItem(CHAVE, JSON.stringify(db));
-            render();
-            fecharModal('modal-menu-opcoes');
-            alert('Backup restaurado com sucesso!');
+    function importarBackup(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            try {
+                const parsed = JSON.parse(e.target.result);
+                const listaReparos = Array.isArray(parsed.reparos) ? parsed.reparos : [];
+                const total = listaReparos.length;
+                db = {
+                    reparos: listaReparos.map((r, i) => ({
+                        ...r,
+                        criadoEm: typeof r.criadoEm === 'number' ? r.criadoEm : (total - i)
+                    })),
+                    hist_reparos: Array.isArray(parsed.hist_reparos) ? parsed.hist_reparos : [],
+                    tabelaPrecos: Array.isArray(parsed.tabelaPrecos) ? parsed.tabelaPrecos : precosPadrao
+                };
+                salvarDB();
+                render();
+                fecharModal('modal-menu-opcoes');
+                alert('Backup restaurado com sucesso!');
+            } catch (err) {
+                alert('Arquivo de backup inválido.');
+            }
         };
-        r.readAsText(e.target.files[0]);
+        reader.readAsText(file);
     }
 
+    carregarSelectReparos();
     render();
+    lucide.createIcons();
 </script>
 </body>
-</html> 
+</html>
