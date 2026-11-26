@@ -156,8 +156,10 @@
             gap: 10px;
         }
 
-        .card-acoes {
+        .card-acoes-lado {
             display: flex;
+            flex-direction: row;
+            align-items: center;
             gap: 8px;
             margin-top: 12px;
             padding-top: 10px;
@@ -170,7 +172,7 @@
             background: #f8fafc;
             color: var(--text-dark);
             border-radius: 10px;
-            padding: 8px 10px;
+            padding: 9px 8px;
             font-size: 11px;
             font-weight: 700;
             cursor: pointer;
@@ -178,6 +180,7 @@
             align-items: center;
             justify-content: center;
             gap: 5px;
+            white-space: nowrap;
         }
 
         .btn-acao-editar {
@@ -700,9 +703,9 @@
                             <div style="font-size:11px; font-weight:700; color:var(--accent-green);">Líq: ${formatarMoeda(liquido)}</div>
                         </div>
                     </div>
-                    <div class="card-acoes">
+                    <div class="card-acoes-lado">
                         <button class="btn-acao-card btn-acao-pago" onclick="alternarPago(${idxOriginal})">
-                            <i data-lucide="check" size="14"></i> ${r.pago ? 'Pago' : 'Marcar Pago'}
+                            <i data-lucide="check" size="14"></i> ${r.pago ? 'Pago' : 'Pagar'}
                         </button>
                         <button class="btn-acao-card btn-acao-editar" onclick="abrirForm(${idxOriginal})">
                             <i data-lucide="pencil" size="14"></i> Editar
@@ -854,4 +857,3 @@
 </script>
 </body>
 </html>
-
