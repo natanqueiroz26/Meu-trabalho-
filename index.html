@@ -99,9 +99,9 @@
             font-size: 34px; 
             font-weight: 800; 
             text-align: center; 
-            margin: 0 0 20px 0;
+            margin: 0 0 16px 0;
         }
-        .divisoria { border-top: 1px solid rgba(255,255,255,0.15); margin-bottom: 15px; }
+        .divisoria { border-top: 1px solid rgba(255,255,255,0.15); margin-bottom: 14px; }
         .grid-detalhes { display: flex; justify-content: space-around; text-align: center; }
         .item-detalhe span { display: block; font-size: 9px; font-weight: 700; color: #94a3b8; letter-spacing: 0.5px; margin-bottom: 4px; }
         .item-detalhe b { font-size: 14px; color: white; font-weight: 700; }
@@ -140,65 +140,62 @@
             gap: 6px;
         }
 
+        .card-wrapper {
+            position: relative;
+            margin-bottom: 12px;
+            border-radius: 18px;
+            overflow: hidden;
+            background: #e2e8f0;
+        }
+
+        .actions-right {
+            position: absolute;
+            top: 0; bottom: 0; right: 0;
+            width: 168px;
+            display: flex;
+            align-items: center;
+            justify-content: space-evenly;
+            padding: 0 8px;
+            gap: 6px;
+            z-index: 1;
+        }
+
+        .btn-swipe-action {
+            border: none;
+            border-radius: 12px;
+            width: 46px;
+            height: 46px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: 800;
+            gap: 2px;
+        }
+
+        .btn-swipe-pago { background: #d1fae5; color: #065f46; }
+        .btn-swipe-editar { background: #dbeafe; color: #1e40af; }
+        .btn-swipe-excluir { background: #fee2e2; color: #991b1b; }
+
         .card-registro { 
             background: white; 
             padding: 16px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start; 
+            position: relative;
+            z-index: 2;
+            transition: transform 0.2s ease-out;
+            touch-action: pan-y;
             border-radius: 18px;
             border: 1px solid var(--border-color);
-            margin-bottom: 12px;
-            box-shadow: 0 2px 6px rgba(15,23,42,0.03);
+            user-select: none;
         }
 
-        .card-topo {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 10px;
-        }
-
-        .card-acoes-lado {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            gap: 8px;
-            margin-top: 12px;
-            padding-top: 10px;
-            border-top: 1px solid #f1f5f9;
-        }
-
-        .btn-acao-card {
-            flex: 1;
-            border: 1px solid var(--border-color);
-            background: #f8fafc;
-            color: var(--text-dark);
-            border-radius: 10px;
-            padding: 9px 8px;
-            font-size: 11px;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            white-space: nowrap;
-        }
-
-        .btn-acao-editar {
-            background: #eff6ff;
-            border-color: #bfdbfe;
-            color: #1d4ed8;
-        }
-
-        .btn-acao-excluir {
-            background: #fef2f2;
-            border-color: #fecaca;
-            color: #dc2626;
-        }
-
-        .btn-acao-pago {
-            background: #ecfdf5;
-            border-color: #a7f3d0;
-            color: #047857;
+        .card-registro.swiped {
+            transform: translateX(-168px);
         }
 
         .badge-status {
@@ -258,17 +255,21 @@
 
 <div class="card-resumo">
     <button class="btn-relatorio-top" onclick="gerarRelatorio()" title="Gerar Relatório"><i data-lucide="download" size="18"></i></button>
-    <span class="label-saldo">SALDO REPAROS</span>
+    <span class="label-saldo">SALDO REPAROS (LÍQUIDO)</span>
     <h1 class="valor-saldo" id="val-saldo-topo">R$ 0,00</h1>
     <div class="divisoria"></div>
     <div class="grid-detalhes">
         <div class="item-detalhe">
-            <span>BRUTO TOTAL</span>
-            <b id="val-bruto-topo">R$ 0.00</b>
+            <span>GANHO PAGO</span>
+            <b id="val-pago-topo" style="color:#6ee7b7;">R$ 0,00</b>
+        </div>
+        <div class="item-detalhe">
+            <span>A RECEBER</span>
+            <b id="val-pendente-topo" style="color:#fcd34d;">R$ 0,00</b>
         </div>
         <div class="item-detalhe">
             <span>GASTO PEÇAS</span>
-            <b id="val-gasto-topo">R$ 0.00</b>
+            <b id="val-gasto-topo">R$ 0,00</b>
         </div>
     </div>
 </div>
@@ -379,7 +380,7 @@
 <div class="modal-overlay" id="modal-historico-mensal">
     <div class="modal-body">
         <h3 style="margin-top:0; display:flex; align-items:center; gap:8px;"><i data-lucide="trending-up" style="color:#10b981;"></i> Ganhos por Mês (Pagos)</h3>
-        <p style="font-size:11px; color:var(--text-muted); margin-top:-5px; margin-bottom:15px;">Abaixo constam os valores ganhos organizados por mês (somente trabalhos marcados como PAGOS):</p>
+        <p style="font-size:11px; color:var(--text-muted); margin-top:-5px; margin-bottom:15px;">Soma líquida (valor bruto menos gasto com peças) de serviços marcados como PAGOS:</p>
         
         <div id="conteudo-historico-meses" style="max-height:350px; overflow-y:auto;"></div>
         
@@ -656,22 +657,87 @@
         render();
     }
 
+    function habilitarSwipeCards() {
+        const cards = document.querySelectorAll('.card-registro');
+        cards.forEach(card => {
+            let startX = 0;
+            let currentX = 0;
+            let dragging = false;
+
+            card.addEventListener('touchstart', e => {
+                startX = e.touches[0].clientX;
+                currentX = startX;
+                dragging = true;
+                card.style.transition = 'none';
+            }, { passive: true });
+
+            card.addEventListener('touchmove', e => {
+                if (!dragging) return;
+                currentX = e.touches[0].clientX;
+                const diff = currentX - startX;
+                const baseOffset = card.classList.contains('swiped') ? -168 : 0;
+                const nextX = Math.max(-168, Math.min(0, baseOffset + diff));
+                card.style.transform = `translateX(${nextX}px)`;
+            }, { passive: true });
+
+            card.addEventListener('touchend', () => {
+                if (!dragging) return;
+                dragging = false;
+                card.style.transition = 'transform 0.2s ease-out';
+                const diff = currentX - startX;
+                if (diff < -45) {
+                    document.querySelectorAll('.card-registro.swiped').forEach(other => {
+                        if (other !== card) {
+                            other.classList.remove('swiped');
+                            other.style.transform = '';
+                        }
+                    });
+                    card.classList.add('swiped');
+                    card.style.transform = 'translateX(-168px)';
+                } else if (diff > 35) {
+                    card.classList.remove('swiped');
+                    card.style.transform = 'translateX(0px)';
+                } else {
+                    card.style.transform = card.classList.contains('swiped') ? 'translateX(-168px)' : 'translateX(0px)';
+                }
+            });
+
+            card.addEventListener('dblclick', () => {
+                card.classList.toggle('swiped');
+                card.style.transform = card.classList.contains('swiped') ? 'translateX(-168px)' : 'translateX(0px)';
+            });
+        });
+    }
+
     function render() {
-        let brutoTotal = 0;
         let gastoTotal = 0;
         let saldoLiquido = 0;
+        let ganhoPago = 0;
+        let ganhoPendente = 0;
 
         db.reparos.forEach(r => {
             const b = Number(r.bruto || 0);
             const g = Number(r.gasto || 0);
-            brutoTotal += b;
+            const liq = b - g;
             gastoTotal += g;
-            saldoLiquido += (b - g);
+            saldoLiquido += liq;
+            if (r.pago) {
+                ganhoPago += liq;
+            } else {
+                ganhoPendente += liq;
+            }
+        });
+
+        db.hist_reparos.forEach(r => {
+            const b = Number(r.bruto || 0);
+            const g = Number(r.gasto || 0);
+            ganhoPago += (b - g);
         });
 
         document.getElementById('val-saldo-topo').textContent = formatarMoeda(saldoLiquido);
-        document.getElementById('val-bruto-topo').textContent = `R$ ${brutoTotal.toFixed(2)}`;
-        document.getElementById('val-gasto-topo').textContent = `R$ ${gastoTotal.toFixed(2)}`;
+        document.getElementById('val-pago-topo').textContent = formatarMoeda(ganhoPago);
+        document.getElementById('val-pendente-topo').textContent = formatarMoeda(ganhoPendente);
+        document.getElementById('val-gasto-topo').textContent = formatarMoeda(gastoTotal);
 
         const lista = document.getElementById('lista-cards');
         if (db.reparos.length === 0) {
@@ -689,8 +755,22 @@
                 : 'Reparo avulso';
 
             return `
-                <div class="card-registro">
-                    <div class="card-topo">
+                <div class="card-wrapper">
+                    <div class="actions-right">
+                        <button class="btn-swipe-action btn-swipe-pago" onclick="alternarPago(${idxOriginal})" title="Marcar Pago/Pendente">
+                            <i data-lucide="check" size="16"></i>
+                            <span>${r.pago ? 'Pendente' : 'Pago'}</span>
+                        </button>
+                        <button class="btn-swipe-action btn-swipe-editar" onclick="abrirForm(${idxOriginal})" title="Editar">
+                            <i data-lucide="pencil" size="16"></i>
+                            <span>Editar</span>
+                        </button>
+                        <button class="btn-swipe-action btn-swipe-excluir" onclick="excluirReparo(${idxOriginal})" title="Apagar">
+                            <i data-lucide="trash-2" size="16"></i>
+                            <span>Apagar</span>
+                        </button>
+                    </div>
+                    <div class="card-registro">
                         <div>
                             <div style="font-weight:800; font-size:14px;">${r.cliente}</div>
                             <div style="font-size:12px; color:var(--text-muted);">${r.kite || 'Sem equipamento'} • ${formatarData(r.data)}</div>
@@ -700,24 +780,14 @@
                         <div style="text-align:right; flex-shrink:0;">
                             <div style="font-weight:800; font-size:15px; color:var(--card-dark);">${formatarMoeda(r.bruto)}</div>
                             <div style="font-size:11px; color:var(--text-muted);">Peças: ${formatarMoeda(r.gasto)}</div>
-                            <div style="font-size:11px; font-weight:700; color:var(--accent-green);">Líq: ${formatarMoeda(liquido)}</div>
+                            <div style="font-size:11px; font-weight:700; color:var(--accent-green);">Ganho: ${formatarMoeda(liquido)}</div>
                         </div>
-                    </div>
-                    <div class="card-acoes-lado">
-                        <button class="btn-acao-card btn-acao-pago" onclick="alternarPago(${idxOriginal})">
-                            <i data-lucide="check" size="14"></i> ${r.pago ? 'Pago' : 'Pagar'}
-                        </button>
-                        <button class="btn-acao-card btn-acao-editar" onclick="abrirForm(${idxOriginal})">
-                            <i data-lucide="pencil" size="14"></i> Editar
-                        </button>
-                        <button class="btn-acao-card btn-acao-excluir" onclick="excluirReparo(${idxOriginal})">
-                            <i data-lucide="trash-2" size="14"></i> Apagar
-                        </button>
                     </div>
                 </div>
             `;
         }).join('');
 
+        habilitarSwipeCards();
         lucide.createIcons();
     }
 
