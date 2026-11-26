@@ -99,12 +99,13 @@
             font-size: 34px; 
             font-weight: 800; 
             text-align: center; 
-            margin: 0 0 16px 0;
+            margin: 0 0 20px 0;
         }
-        .divisoria { border-top: 1px solid rgba(255,255,255,0.15); margin-bottom: 14px; }
+        .divisoria { border-top: 1px solid rgba(255,255,255,0.15); margin-bottom: 15px; }
         .grid-detalhes { display: flex; justify-content: space-around; text-align: center; }
+        .item-detalhe { flex: 1; }
         .item-detalhe span { display: block; font-size: 9px; font-weight: 700; color: #94a3b8; letter-spacing: 0.5px; margin-bottom: 4px; }
-        .item-detalhe b { font-size: 14px; color: white; font-weight: 700; }
+        .item-detalhe b { font-size: 15px; color: white; font-weight: 700; }
 
         .grid-botoes-acao { display: flex; gap: 10px; margin-bottom: 20px; }
         .btn-add { 
@@ -151,20 +152,20 @@
         .actions-right {
             position: absolute;
             top: 0; bottom: 0; right: 0;
-            width: 168px;
+            width: 120px;
             display: flex;
             align-items: center;
             justify-content: space-evenly;
             padding: 0 8px;
-            gap: 6px;
+            gap: 8px;
             z-index: 1;
         }
 
         .btn-swipe-action {
             border: none;
             border-radius: 12px;
-            width: 46px;
-            height: 46px;
+            width: 48px;
+            height: 48px;
             cursor: pointer;
             display: flex;
             flex-direction: column;
@@ -175,7 +176,6 @@
             gap: 2px;
         }
 
-        .btn-swipe-pago { background: #d1fae5; color: #065f46; }
         .btn-swipe-editar { background: #dbeafe; color: #1e40af; }
         .btn-swipe-excluir { background: #fee2e2; color: #991b1b; }
 
@@ -195,19 +195,8 @@
         }
 
         .card-registro.swiped {
-            transform: translateX(-168px);
+            transform: translateX(-120px);
         }
-
-        .badge-status {
-            font-size: 10px;
-            font-weight: 800;
-            padding: 4px 8px;
-            border-radius: 8px;
-            display: inline-block;
-            margin-top: 6px;
-        }
-        .badge-pago { background: #d1fae5; color: #065f46; }
-        .badge-pendente { background: #fef3c7; color: #92400e; }
 
         .caixa-form { background: white; padding: 20px; border-radius: 20px; margin-bottom: 20px; border: 1px solid var(--border-color); display: none; }
         .titulo-form { margin: 0 0 14px 0; font-size: 14px; font-weight: 800; color: var(--card-dark); }
@@ -255,20 +244,16 @@
 
 <div class="card-resumo">
     <button class="btn-relatorio-top" onclick="gerarRelatorio()" title="Gerar Relatório"><i data-lucide="download" size="18"></i></button>
-    <span class="label-saldo">SALDO REPAROS (LÍQUIDO)</span>
+    <span class="label-saldo">A RECEBER (50% DO TOTAL)</span>
     <h1 class="valor-saldo" id="val-saldo-topo">R$ 0,00</h1>
     <div class="divisoria"></div>
     <div class="grid-detalhes">
         <div class="item-detalhe">
-            <span>GANHO PAGO</span>
-            <b id="val-pago-topo" style="color:#6ee7b7;">R$ 0,00</b>
+            <span>TOTAL</span>
+            <b id="val-total-topo">R$ 0,00</b>
         </div>
         <div class="item-detalhe">
-            <span>A RECEBER</span>
-            <b id="val-pendente-topo" style="color:#fcd34d;">R$ 0,00</b>
-        </div>
-        <div class="item-detalhe">
-            <span>GASTO PEÇAS</span>
+            <span>GASTOS</span>
             <b id="val-gasto-topo">R$ 0,00</b>
         </div>
     </div>
@@ -313,10 +298,10 @@
         <p style="font-size:11px; color:var(--text-muted); margin:0; text-align:center;">Nenhum reparo incluído ainda.</p>
     </div>
 
-    <label>Valor Total Calculado (R$)</label>
+    <label>Valor Total da Reparação (R$)</label>
     <input type="number" step="0.01" id="f-bru" value="0.00">
 
-    <label>Gasto com Peças (R$)</label>
+    <label>Gastos com Peças (R$)</label>
     <input type="number" step="0.01" id="f-gas" value="0" placeholder="0.00">
 
     <div style="display:flex; gap:10px; margin-top:10px;">
@@ -379,8 +364,8 @@
 
 <div class="modal-overlay" id="modal-historico-mensal">
     <div class="modal-body">
-        <h3 style="margin-top:0; display:flex; align-items:center; gap:8px;"><i data-lucide="trending-up" style="color:#10b981;"></i> Ganhos por Mês (Pagos)</h3>
-        <p style="font-size:11px; color:var(--text-muted); margin-top:-5px; margin-bottom:15px;">Soma líquida (valor bruto menos gasto com peças) de serviços marcados como PAGOS:</p>
+        <h3 style="margin-top:0; display:flex; align-items:center; gap:8px;"><i data-lucide="trending-up" style="color:#10b981;"></i> Ganhos por Mês (50%)</h3>
+        <p style="font-size:11px; color:var(--text-muted); margin-top:-5px; margin-bottom:15px;">Resumo mensal do total bruto, sua parte (50%) e gastos:</p>
         
         <div id="conteudo-historico-meses" style="max-height:350px; overflow-y:auto;"></div>
         
@@ -593,7 +578,6 @@
             itens: [...itensTempAdicionados],
             bruto,
             gasto,
-            pago: edicaoIdx >= 0 ? Boolean(db.reparos[edicaoIdx].pago) : false,
             criadoEm: edicaoIdx >= 0 ? (db.reparos[edicaoIdx].criadoEm || Date.now()) : Date.now()
         };
 
@@ -621,13 +605,6 @@
             });
     }
 
-    function alternarPago(idx) {
-        if (!db.reparos[idx]) return;
-        db.reparos[idx].pago = !db.reparos[idx].pago;
-        salvarDB();
-        render();
-    }
-
     function excluirReparo(idx) {
         const item = db.reparos[idx];
         if (!item) return;
@@ -643,16 +620,14 @@
     }
 
     function fecharMes() {
-        const pagos = db.reparos.filter(r => r.pago);
-        if (pagos.length === 0) {
-            alert('Nenhum reparo marcado como PAGO para dar baixa.');
+        if (db.reparos.length === 0) {
+            alert('Nenhum reparo na lista para dar baixa.');
             return;
         }
-        if (!confirm(`Mover ${pagos.length} reparo(s) pago(s) para o histórico mensal?`)) return;
+        if (!confirm(`Mover ${db.reparos.length} reparo(s) para o histórico mensal?`)) return;
 
-        const pendentes = db.reparos.filter(r => !r.pago);
-        db.hist_reparos.push(...pagos);
-        db.reparos = pendentes;
+        db.hist_reparos.push(...db.reparos);
+        db.reparos = [];
         salvarDB();
         render();
     }
@@ -675,8 +650,8 @@
                 if (!dragging) return;
                 currentX = e.touches[0].clientX;
                 const diff = currentX - startX;
-                const baseOffset = card.classList.contains('swiped') ? -168 : 0;
-                const nextX = Math.max(-168, Math.min(0, baseOffset + diff));
+                const baseOffset = card.classList.contains('swiped') ? -120 : 0;
+                const nextX = Math.max(-120, Math.min(0, baseOffset + diff));
                 card.style.transform = `translateX(${nextX}px)`;
             }, { passive: true });
 
@@ -685,7 +660,7 @@
                 dragging = false;
                 card.style.transition = 'transform 0.2s ease-out';
                 const diff = currentX - startX;
-                if (diff < -45) {
+                if (diff < -40) {
                     document.querySelectorAll('.card-registro.swiped').forEach(other => {
                         if (other !== card) {
                             other.classList.remove('swiped');
@@ -693,51 +668,36 @@
                         }
                     });
                     card.classList.add('swiped');
-                    card.style.transform = 'translateX(-168px)';
-                } else if (diff > 35) {
+                    card.style.transform = 'translateX(-120px)';
+                } else if (diff > 30) {
                     card.classList.remove('swiped');
                     card.style.transform = 'translateX(0px)';
                 } else {
-                    card.style.transform = card.classList.contains('swiped') ? 'translateX(-168px)' : 'translateX(0px)';
+                    card.style.transform = card.classList.contains('swiped') ? 'translateX(-120px)' : 'translateX(0px)';
                 }
             });
 
             card.addEventListener('dblclick', () => {
                 card.classList.toggle('swiped');
-                card.style.transform = card.classList.contains('swiped') ? 'translateX(-168px)' : 'translateX(0px)';
+                card.style.transform = card.classList.contains('swiped') ? 'translateX(-120px)' : 'translateX(0px)';
             });
         });
     }
 
     function render() {
-        let gastoTotal = 0;
-        let saldoLiquido = 0;
-        let ganhoPago = 0;
-        let ganhoPendente = 0;
+        let totalBruto = 0;
+        let gastosTotal = 0;
 
         db.reparos.forEach(r => {
-            const b = Number(r.bruto || 0);
-            const g = Number(r.gasto || 0);
-            const liq = b - g;
-            gastoTotal += g;
-            saldoLiquido += liq;
-            if (r.pago) {
-                ganhoPago += liq;
-            } else {
-                ganhoPendente += liq;
-            }
+            totalBruto += Number(r.bruto || 0);
+            gastosTotal += Number(r.gasto || 0);
         });
 
-        db.hist_reparos.forEach(r => {
-            const b = Number(r.bruto || 0);
-            const g = Number(r.gasto || 0);
-            ganhoPago += (b - g);
-        });
+        const aReceber50 = totalBruto * 0.5;
 
-        document.getElementById('val-saldo-topo').textContent = formatarMoeda(saldoLiquido);
-        document.getElementById('val-pago-topo').textContent = formatarMoeda(ganhoPago);
-        document.getElementById('val-pendente-topo').textContent = formatarMoeda(ganhoPendente);
-        document.getElementById('val-gasto-topo').textContent = formatarMoeda(gastoTotal);
+        document.getElementById('val-saldo-topo').textContent = formatarMoeda(aReceber50);
+        document.getElementById('val-total-topo').textContent = formatarMoeda(totalBruto);
+        document.getElementById('val-gasto-topo').textContent = formatarMoeda(gastosTotal);
 
         const lista = document.getElementById('lista-cards');
         if (db.reparos.length === 0) {
@@ -749,7 +709,8 @@
         const ordenados = obterReparosOrdenados();
 
         lista.innerHTML = ordenados.map(({ item: r, idxOriginal }) => {
-            const liquido = Number(r.bruto || 0) - Number(r.gasto || 0);
+            const valorReparacao = Number(r.bruto || 0);
+            const suaParte50 = valorReparacao * 0.5;
             const resumoItens = Array.isArray(r.itens) && r.itens.length
                 ? r.itens.map(it => `${it.qtd}x ${it.nome}`).join(', ')
                 : 'Reparo avulso';
@@ -757,10 +718,6 @@
             return `
                 <div class="card-wrapper">
                     <div class="actions-right">
-                        <button class="btn-swipe-action btn-swipe-pago" onclick="alternarPago(${idxOriginal})" title="Marcar Pago/Pendente">
-                            <i data-lucide="check" size="16"></i>
-                            <span>${r.pago ? 'Pendente' : 'Pago'}</span>
-                        </button>
                         <button class="btn-swipe-action btn-swipe-editar" onclick="abrirForm(${idxOriginal})" title="Editar">
                             <i data-lucide="pencil" size="16"></i>
                             <span>Editar</span>
@@ -775,12 +732,11 @@
                             <div style="font-weight:800; font-size:14px;">${r.cliente}</div>
                             <div style="font-size:12px; color:var(--text-muted);">${r.kite || 'Sem equipamento'} • ${formatarData(r.data)}</div>
                             <div style="font-size:11px; color:#475569; margin-top:4px;">${resumoItens}</div>
-                            <span class="badge-status ${r.pago ? 'badge-pago' : 'badge-pendente'}">${r.pago ? 'PAGO' : 'PENDENTE'}</span>
                         </div>
                         <div style="text-align:right; flex-shrink:0;">
-                            <div style="font-weight:800; font-size:15px; color:var(--card-dark);">${formatarMoeda(r.bruto)}</div>
-                            <div style="font-size:11px; color:var(--text-muted);">Peças: ${formatarMoeda(r.gasto)}</div>
-                            <div style="font-size:11px; font-weight:700; color:var(--accent-green);">Ganho: ${formatarMoeda(liquido)}</div>
+                            <div style="font-weight:800; font-size:15px; color:var(--card-dark);">${formatarMoeda(valorReparacao)}</div>
+                            <div style="font-size:11px; color:var(--text-muted);">Gasto: ${formatarMoeda(r.gasto)}</div>
+                            <div style="font-size:11px; font-weight:700; color:var(--accent-green);">50%: ${formatarMoeda(suaParte50)}</div>
                         </div>
                     </div>
                 </div>
@@ -830,18 +786,18 @@
 
     function renderHistoricoMensal() {
         const cont = document.getElementById('conteudo-historico-meses');
-        const todosPagos = [
-            ...db.reparos.filter(r => r.pago),
+        const todos = [
+            ...db.reparos,
             ...db.hist_reparos
         ];
 
-        if (todosPagos.length === 0) {
-            cont.innerHTML = `<p style="font-size:12px; color:var(--text-muted); text-align:center;">Nenhum ganho pago registrado ainda.</p>`;
+        if (todos.length === 0) {
+            cont.innerHTML = `<p style="font-size:12px; color:var(--text-muted); text-align:center;">Nenhum registro encontrado.</p>`;
             return;
         }
 
         const grupos = {};
-        todosPagos.forEach(r => {
+        todos.forEach(r => {
             const chaveMes = obterNomeMesAno(r.data);
             if (!grupos[chaveMes]) grupos[chaveMes] = { bruto: 0, gasto: 0, qtd: 0 };
             grupos[chaveMes].bruto += Number(r.bruto || 0);
@@ -850,15 +806,15 @@
         });
 
         cont.innerHTML = Object.entries(grupos).map(([mes, info]) => {
-            const liq = info.bruto - info.gasto;
+            const parte50 = info.bruto * 0.5;
             return `
                 <div class="card-mes-historico">
                     <div style="display:flex; justify-content:space-between; font-weight:800; font-size:13px; margin-bottom:4px;">
                         <span>${mes}</span>
-                        <span style="color:var(--accent-green);">${formatarMoeda(liq)}</span>
+                        <span style="color:var(--accent-green);">50%: ${formatarMoeda(parte50)}</span>
                     </div>
                     <div style="font-size:11px; color:var(--text-muted);">
-                        ${info.qtd} serviço(s) • Bruto: ${formatarMoeda(info.bruto)} • Peças: ${formatarMoeda(info.gasto)}
+                        ${info.qtd} serviço(s) • Total: ${formatarMoeda(info.bruto)} • Gastos: ${formatarMoeda(info.gasto)}
                     </div>
                 </div>
             `;
@@ -866,13 +822,21 @@
     }
 
     function gerarRelatorio() {
+        let totalBruto = 0;
+        let gastosTotal = 0;
         const ordenados = obterReparosOrdenados();
+
         const linhas = ordenados.map(({ item: r }, i) => {
-            const status = r.pago ? 'PAGO' : 'PENDENTE';
-            return `${i + 1}. ${r.cliente} (${r.kite || 'Equipamento'}) - ${formatarMoeda(r.bruto)} [${status}]`;
+            const b = Number(r.bruto || 0);
+            const g = Number(r.gasto || 0);
+            totalBruto += b;
+            gastosTotal += g;
+            return `${i + 1}. ${r.cliente} (${r.kite || 'Equipamento'}) - Total: ${formatarMoeda(b)} | Gasto: ${formatarMoeda(g)}`;
         });
+
+        const aReceber50 = totalBruto * 0.5;
         const texto = linhas.length
-            ? `RELATÓRIO DE REPAROS\n\n${linhas.join('\n')}`
+            ? `RELATÓRIO DE REPAROS\n\n${linhas.join('\n')}\n\nTOTAL: ${formatarMoeda(totalBruto)}\nA RECEBER (50%): ${formatarMoeda(aReceber50)}\nGASTOS: ${formatarMoeda(gastosTotal)}`
             : 'Nenhum reparo ativo no momento.';
 
         document.getElementById('conteudo-comprovante').textContent = texto;
