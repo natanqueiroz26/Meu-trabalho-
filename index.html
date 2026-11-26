@@ -1,1 +1,857 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MEU TRABALHO - REPARAÇÃO</title>
+
+    <link rel="icon" type="image/png" href="Icon.png.png">
+    <link rel="apple-touch-icon" href="Icon.png.png">
+    <meta name="theme-color" content="#f8fafc">
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        :root { 
+            --bg: #f8fafc;
+            --card-dark: #0f4c5c;
+            --card-light: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --accent-green: #10b981;
+            --accent-purple: #127475;
+            --border-color: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        
+        body { 
+            margin: 0 auto; 
+            background: var(--bg); 
+            color: var(--text-dark); 
+            padding: 15px 15px 40px 15px; 
+            max-width: 480px; 
+            overflow-x: hidden;
+        }
+
+        header { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 10px 5px 15px 5px;
+        }
+        .header-brand { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            font-weight: 800; 
+            font-size: 16px; 
+            letter-spacing: 1px;
+            color: var(--card-dark);
+        }
+        .btn-menu-bars { 
+            background: white; 
+            border: 1px solid var(--border-color); 
+            border-radius: 12px;
+            cursor: pointer; 
+            color: var(--card-dark); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            padding: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .card-resumo { 
+            background: var(--card-dark); 
+            color: white; 
+            border-radius: 24px; 
+            padding: 24px 20px 20px 20px; 
+            position: relative; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+            margin-bottom: 15px;
+        }
+        .btn-relatorio-top {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.15);
+            border: none;
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+        }
+        .card-resumo .label-saldo { 
+            font-size: 10px; 
+            font-weight: 700; 
+            letter-spacing: 1.5px; 
+            color: #94a3b8; 
+            text-align: center; 
+            display: block; 
+            margin-bottom: 5px;
+        }
+        .card-resumo .valor-saldo { 
+            font-size: 34px; 
+            font-weight: 800; 
+            text-align: center; 
+            margin: 0 0 20px 0;
+        }
+        .divisoria { border-top: 1px solid rgba(255,255,255,0.15); margin-bottom: 15px; }
+        .grid-detalhes { display: flex; justify-content: space-around; text-align: center; }
+        .item-detalhe span { display: block; font-size: 9px; font-weight: 700; color: #94a3b8; letter-spacing: 0.5px; margin-bottom: 4px; }
+        .item-detalhe b { font-size: 14px; color: white; font-weight: 700; }
+
+        .grid-botoes-acao { display: flex; gap: 10px; margin-bottom: 20px; }
+        .btn-add { 
+            flex: 1; 
+            background: white; 
+            border: 1px solid var(--border-color); 
+            padding: 14px; 
+            border-radius: 14px; 
+            font-weight: 800; 
+            font-size: 12px; 
+            color: var(--text-dark); 
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .btn-baixa { 
+            flex: 1; 
+            background: var(--card-dark); 
+            border: none; 
+            padding: 14px; 
+            border-radius: 14px; 
+            font-weight: 800; 
+            font-size: 12px; 
+            color: white; 
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(15, 76, 92, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .card-registro { 
+            background: white; 
+            padding: 16px; 
+            border-radius: 18px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 12px;
+            box-shadow: 0 2px 6px rgba(15,23,42,0.03);
+        }
+
+        .card-topo {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .card-acoes {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .btn-acao-card {
+            flex: 1;
+            border: 1px solid var(--border-color);
+            background: #f8fafc;
+            color: var(--text-dark);
+            border-radius: 10px;
+            padding: 8px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .btn-acao-editar {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+            color: #1d4ed8;
+        }
+
+        .btn-acao-excluir {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #dc2626;
+        }
+
+        .btn-acao-pago {
+            background: #ecfdf5;
+            border-color: #a7f3d0;
+            color: #047857;
+        }
+
+        .badge-status {
+            font-size: 10px;
+            font-weight: 800;
+            padding: 4px 8px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-top: 6px;
+        }
+        .badge-pago { background: #d1fae5; color: #065f46; }
+        .badge-pendente { background: #fef3c7; color: #92400e; }
+
+        .caixa-form { background: white; padding: 20px; border-radius: 20px; margin-bottom: 20px; border: 1px solid var(--border-color); display: none; }
+        .titulo-form { margin: 0 0 14px 0; font-size: 14px; font-weight: 800; color: var(--card-dark); }
+        label { display: block; margin-bottom: 5px; font-size: 10px; font-weight: 800; color: var(--text-muted); }
+        input, select { width: 100%; box-sizing: border-box; padding: 12px; margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 14px; outline: none; background: #fff; }
+
+        .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); z-index:1000; justify-content:center; align-items:center; backdrop-filter: blur(4px); }
+        .modal-body { background:white; width:90%; max-width:400px; border-radius:24px; padding:20px; max-height:85vh; overflow-y:auto; }
+
+        .btn-menu-opcao {
+            width: 100%;
+            background: #f1f5f9;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--text-dark);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .card-mes-historico {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        .item-tabela-preco { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-brand">
+        <span>SISTEMA DE REPARAÇÃO</span>
+    </div>
+    <button class="btn-menu-bars" onclick="abrirMenuOpcoes()"><i data-lucide="menu" size="24"></i></button>
+</header>
+
+<div class="card-resumo">
+    <button class="btn-relatorio-top" onclick="gerarRelatorio()" title="Gerar Relatório"><i data-lucide="download" size="18"></i></button>
+    <span class="label-saldo">SALDO REPAROS</span>
+    <h1 class="valor-saldo" id="val-saldo-topo">R$ 0,00</h1>
+    <div class="divisoria"></div>
+    <div class="grid-detalhes">
+        <div class="item-detalhe">
+            <span>BRUTO TOTAL</span>
+            <b id="val-bruto-topo">R$ 0.00</b>
+        </div>
+        <div class="item-detalhe">
+            <span>GASTO PEÇAS</span>
+            <b id="val-gasto-topo">R$ 0.00</b>
+        </div>
+    </div>
+</div>
+
+<div class="grid-botoes-acao">
+    <button class="btn-add" onclick="abrirForm()"><i data-lucide="plus" size="16"></i> ADICIONAR</button>
+    <button class="btn-baixa" onclick="fecharMes()"><i data-lucide="check-check" size="16"></i> BAIXA GERAL</button>
+</div>
+
+<div class="caixa-form" id="form-adicionar">
+    <h4 class="titulo-form" id="titulo-form">NOVA REPARAÇÃO</h4>
+
+    <label>Data</label>
+    <input type="date" id="f-d">
+
+    <label>Nome do Cliente</label>
+    <input type="text" id="f-cli" placeholder="Ex: João Silva">
+
+    <label>Nome do Kite/Equipamento</label>
+    <input type="text" id="f-kite" placeholder="Ex: Core XR7 10m">
+
+    <div style="background:#f1f5f9; padding:12px; border-radius:12px; margin-bottom:12px;">
+        <label style="color:var(--card-dark);">SELECIONAR REPARAÇÕES</label>
+        
+        <div style="display:flex; gap:8px;">
+            <div style="flex:2;">
+                <select id="f-sel-rep" style="margin-bottom:0;"></select>
+            </div>
+            <div style="flex:1;">
+                <select id="f-qtd" style="margin-bottom:0;"></select>
+            </div>
+        </div>
+
+        <button type="button" onclick="incluirItemNaLista()" style="width:100%; margin-top:8px; background:var(--card-dark); color:white; border:none; padding:10px; border-radius:8px; font-weight:bold; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+            <i data-lucide="plus-circle" size="16"></i> Incluir este Reparo
+        </button>
+    </div>
+
+    <label>Reparos Incluídos:</label>
+    <div id="lista-itens-temp" style="background: #f8fafc; border: 1px dashed var(--border-color); padding: 10px; border-radius: 10px; margin-bottom: 12px;">
+        <p style="font-size:11px; color:var(--text-muted); margin:0; text-align:center;">Nenhum reparo incluído ainda.</p>
+    </div>
+
+    <label>Valor Total Calculado (R$)</label>
+    <input type="number" step="0.01" id="f-bru" value="0.00">
+
+    <label>Gasto com Peças (R$)</label>
+    <input type="number" step="0.01" id="f-gas" value="0" placeholder="0.00">
+
+    <div style="display:flex; gap:10px; margin-top:10px;">
+        <button onclick="salvar()" style="flex:1; background:var(--card-dark); color:white; border:none; padding:12px; border-radius:10px; font-weight:bold; cursor:pointer;">Salvar</button>
+        <button onclick="fecharForm()" style="flex:1; background:#e2e8f0; color:#334155; border:none; padding:12px; border-radius:10px; font-weight:bold; cursor:pointer;">Cancelar</button>
+    </div>
+</div>
+
+<div id="lista-cards"></div>
+
+<div class="modal-overlay" id="modal-menu-opcoes">
+    <div class="modal-body">
+        <h3 style="margin-top:0; text-align:center; margin-bottom:20px;">OPÇÕES DO SISTEMA</h3>
+        
+        <button class="btn-menu-opcao" onclick="abrirHistoricoMensal()">
+            <span style="display:flex; align-items:center; gap:10px;"><i data-lucide="trending-up" size="18" style="color:#10b981;"></i> Ganhos & Histórico Mensal</span>
+            <i data-lucide="chevron-right" size="18"></i>
+        </button>
+
+        <button class="btn-menu-opcao" onclick="abrirReparacaoProduto()">
+            <span style="display:flex; align-items:center; gap:10px;"><i data-lucide="wrench" size="18"></i> Reparação Produto</span>
+            <i data-lucide="chevron-right" size="18"></i>
+        </button>
+
+        <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
+
+        <button class="btn-menu-opcao" onclick="exportarBackup()" style="background:#1e293b; color:white;">
+            <span style="display:flex; align-items:center; gap:10px;"><i data-lucide="download" size="18"></i> Baixar Backup</span>
+        </button>
+
+        <button class="btn-menu-opcao" onclick="document.getElementById('input-importar').click()" style="background:#e2e8f0;">
+            <span style="display:flex; align-items:center; gap:10px;"><i data-lucide="upload" size="18"></i> Restaurar Backup</span>
+        </button>
+        <input type="file" id="input-importar" style="display:none;" onchange="importarBackup(event)">
+
+        <button onclick="fecharModal('modal-menu-opcoes')" style="width:100%; padding:12px; background:none; border:none; color:red; margin-top:10px; font-weight:bold; cursor:pointer;">Fechar</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modal-reparacao-produto">
+    <div class="modal-body">
+        <h3 style="margin-top:0; text-align:center; display:flex; align-items:center; justify-content:center; gap:8px;">
+            <i data-lucide="wrench"></i> Reparação Produto
+        </h3>
+        
+        <div style="background:#f8fafc; padding:12px; border-radius:12px; margin-bottom:15px; border:1px solid #e2e8f0;">
+            <label style="margin-top:0;">Nome da Reparação/Serviço</label>
+            <input type="text" id="cfg-nome" placeholder="Ex: Rasgo Bladder">
+            <label>Preço Unitário (R$)</label>
+            <input type="number" step="0.01" id="cfg-preco" placeholder="50.00">
+            <button onclick="adicionarNovoTipoReparo()" style="width:100%; padding:10px; background:var(--card-dark); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">+ Adicionar Reparação</button>
+        </div>
+
+        <label>Reparações Cadastradas:</label>
+        <div id="lista-tabela-precos" style="max-height:220px; overflow-y:auto; margin-bottom:15px;"></div>
+
+        <button onclick="fecharModal('modal-reparacao-produto'); abrirMenuOpcoes();" style="width:100%; padding:12px; background:#e2e8f0; border:none; border-radius:12px; font-weight:bold; cursor:pointer;">Voltar ao Menu</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modal-historico-mensal">
+    <div class="modal-body">
+        <h3 style="margin-top:0; display:flex; align-items:center; gap:8px;"><i data-lucide="trending-up" style="color:#10b981;"></i> Ganhos por Mês (Pagos)</h3>
+        <p style="font-size:11px; color:var(--text-muted); margin-top:-5px; margin-bottom:15px;">Abaixo constam os valores ganhos organizados por mês (somente trabalhos marcados como PAGOS):</p>
+        
+        <div id="conteudo-historico-meses" style="max-height:350px; overflow-y:auto;"></div>
+        
+        <button onclick="fecharModal('modal-historico-mensal'); abrirMenuOpcoes();" style="width:100%; padding:12px; background:#e2e8f0; border:none; border-radius:12px; font-weight:bold; margin-top:15px; cursor:pointer;">Voltar ao Menu</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modal-comprovante">
+    <div class="modal-body">
+        <h3 style="margin-top:0; display:flex; align-items:center; gap:8px;"><i data-lucide="file-text"></i> Relatório</h3>
+        <div id="conteudo-comprovante" style="white-space: pre-wrap; font-size:12px; background:#f1f5f9; padding:10px; border-radius:10px;"></div>
+        <button id="btn-wpp" style="width:100%; background:#22c55e; color:white; border:none; padding:14px; border-radius:12px; font-weight:bold; margin-top:15px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">ENVIAR WHATSAPP</button>
+        <button onclick="fecharModal('modal-comprovante')" style="width:100%; background:#e2e8f0; border:none; padding:12px; border-radius:12px; font-weight:bold; margin-top:8px; cursor:pointer;">FECHAR</button>
+    </div>
+</div>
+
+<script>
+    const CHAVE = 'meu_trabalho_app_v5';
+    
+    const precosPadrao = [
+        { nome: "Rasgo", preco: 50 },
+        { nome: "Rasgo bladder grande", preco: 150 },
+        { nome: "Furo 1/2", preco: 50 },
+        { nome: "Colagem de válvula", preco: 50 }
+    ];
+
+    function initDB() {
+        let def = { reparos: [], hist_reparos: [], tabelaPrecos: precosPadrao };
+        let s = localStorage.getItem(CHAVE);
+        if(!s) return def;
+        try { 
+            let parsed = JSON.parse(s);
+            if(!parsed.tabelaPrecos) parsed.tabelaPrecos = precosPadrao;
+            if(!parsed.hist_reparos) parsed.hist_reparos = [];
+            if(Array.isArray(parsed.reparos)) {
+                const total = parsed.reparos.length;
+                parsed.reparos = parsed.reparos.map((r, i) => ({
+                    ...r,
+                    criadoEm: typeof r.criadoEm === 'number' ? r.criadoEm : (total - i)
+                }));
+            }
+            return parsed;
+        } catch(e){ return def; }
+    }
+
+    var db = initDB();
+    var edicaoIdx = -1;
+    var itensTempAdicionados = [];
+
+    function salvarDB() {
+        localStorage.setItem(CHAVE, JSON.stringify(db));
+    }
+
+    function formatarMoeda(v) {
+        return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function formatarData(d) {
+        if(!d) return '';
+        let [y, m, day] = d.split('-');
+        return `${day}/${m}/${y}`;
+    }
+
+    function obterNomeMesAno(dataStr) {
+        if(!dataStr) return 'Mês Desconhecido';
+        let partes = dataStr.split('-');
+        let data = new Date(partes[0], partes[1] - 1, partes[2]);
+        let mes = data.toLocaleDateString('pt-BR', { month: 'long' });
+        let ano = data.getFullYear();
+        return `${mes.charAt(0).toUpperCase() + mes.slice(1)} / ${ano}`;
+    }
+
+    function abrirMenuOpcoes() {
+        document.getElementById('modal-menu-opcoes').style.display = 'flex';
+        lucide.createIcons();
+    }
+
+    function fecharModal(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+
+    function abrirReparacaoProduto() {
+        fecharModal('modal-menu-opcoes');
+        renderTabelaPrecos();
+        document.getElementById('modal-reparacao-produto').style.display = 'flex';
+        lucide.createIcons();
+    }
+
+    function abrirHistoricoMensal() {
+        fecharModal('modal-menu-opcoes');
+        renderHistoricoMensal();
+        document.getElementById('modal-historico-mensal').style.display = 'flex';
+        lucide.createIcons();
+    }
+
+    function abrirForm(idx = -1) {
+        edicaoIdx = idx;
+        carregarSelectReparos();
+        const form = document.getElementById('form-adicionar');
+        const titulo = document.getElementById('titulo-form');
+        form.style.display = 'block';
+
+        if (idx >= 0) {
+            const item = db.reparos[idx];
+            titulo.textContent = `EDITAR REPARAÇÃO — ${item.cliente.toUpperCase()}`;
+            document.getElementById('f-d').value = item.data || '';
+            document.getElementById('f-cli').value = item.cliente || '';
+            document.getElementById('f-kite').value = item.kite || '';
+            document.getElementById('f-bru').value = Number(item.bruto || 0).toFixed(2);
+            document.getElementById('f-gas').value = Number(item.gasto || 0).toFixed(2);
+            itensTempAdicionados = Array.isArray(item.itens) ? [...item.itens] : [];
+        } else {
+            titulo.textContent = 'NOVA REPARAÇÃO';
+            document.getElementById('f-d').value = new Date().toISOString().split('T')[0];
+            document.getElementById('f-cli').value = '';
+            document.getElementById('f-kite').value = '';
+            document.getElementById('f-bru').value = '0.00';
+            document.getElementById('f-gas').value = '0';
+            itensTempAdicionados = [];
+        }
+        atualizarListaTempVisual(idx < 0);
+        form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        lucide.createIcons();
+    }
+
+    function fecharForm() {
+        document.getElementById('form-adicionar').style.display = 'none';
+        edicaoIdx = -1;
+        itensTempAdicionados = [];
+    }
+
+    function carregarSelectReparos() {
+        let select = document.getElementById('f-sel-rep');
+        select.innerHTML = db.tabelaPrecos.map((item, idx) => 
+            `<option value="${idx}">${item.nome} (${formatarMoeda(item.preco)})</option>`
+        ).join('');
+
+        let selectQtd = document.getElementById('f-qtd');
+        let qtdsHtml = '';
+        for(let i = 1; i <= 11; i++) {
+            qtdsHtml += `<option value="${i}">${i}x</option>`;
+        }
+        selectQtd.innerHTML = qtdsHtml;
+    }
+
+    function incluirItemNaLista() {
+        let selIdx = document.getElementById('f-sel-rep').value;
+        let qtd = parseInt(document.getElementById('f-qtd').value);
+        let itemTabela = db.tabelaPrecos[selIdx];
+
+        if(itemTabela) {
+            let subtotal = itemTabela.preco * qtd;
+            itensTempAdicionados.push({
+                nome: itemTabela.nome,
+                qtd: qtd,
+                valorUnit: itemTabela.preco,
+                subtotal: subtotal
+            });
+            atualizarListaTempVisual(true);
+        }
+    }
+
+    function removerItemTemp(index) {
+        itensTempAdicionados.splice(index, 1);
+        atualizarListaTempVisual(true);
+    }
+
+    function atualizarListaTempVisual(recalcularBruto = false) {
+        let cont = document.getElementById('lista-itens-temp');
+        let totalBruto = 0;
+
+        if(itensTempAdicionados.length === 0) {
+            cont.innerHTML = `<p style="font-size:11px; color:var(--text-muted); margin:0; text-align:center;">Nenhum reparo incluído ainda.</p>`;
+        } else {
+            cont.innerHTML = itensTempAdicionados.map((item, idx) => {
+                totalBruto += Number(item.subtotal || 0);
+                return `
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; padding:4px 0; border-bottom:1px solid #edf2f7;">
+                        <span><b>${item.qtd}x</b> ${item.nome}</span>
+                        <span style="display:flex; align-items:center; gap:6px;">R$ ${Number(item.subtotal).toFixed(2)} 
+                            <button type="button" onclick="removerItemTemp(${idx})" style="border:none; background:none; color:red; cursor:pointer; padding:0;"><i data-lucide="x" size="14"></i></button>
+                        </span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        if (recalcularBruto && itensTempAdicionados.length > 0) {
+            document.getElementById('f-bru').value = totalBruto.toFixed(2);
+        }
+        lucide.createIcons();
+    }
+
+    function salvar() {
+        const data = document.getElementById('f-d').value;
+        const cliente = document.getElementById('f-cli').value.trim();
+        const kite = document.getElementById('f-kite').value.trim();
+        const bruto = parseFloat(document.getElementById('f-bru').value) || 0;
+        const gasto = parseFloat(document.getElementById('f-gas').value) || 0;
+
+        if (!cliente) {
+            alert('Informe o nome do cliente.');
+            return;
+        }
+
+        const registro = {
+            data,
+            cliente,
+            kite,
+            itens: [...itensTempAdicionados],
+            bruto,
+            gasto,
+            pago: edicaoIdx >= 0 ? Boolean(db.reparos[edicaoIdx].pago) : false,
+            criadoEm: edicaoIdx >= 0 ? (db.reparos[edicaoIdx].criadoEm || Date.now()) : Date.now()
+        };
+
+        if (edicaoIdx >= 0) {
+            db.reparos[edicaoIdx] = registro;
+        } else {
+            db.reparos.unshift(registro);
+        }
+
+        salvarDB();
+        fecharForm();
+        render();
+    }
+
+    function obterReparosOrdenados() {
+        return db.reparos
+            .map((item, idxOriginal) => ({ item, idxOriginal }))
+            .sort((a, b) => {
+                const dataA = a.item.data || '';
+                const dataB = b.item.data || '';
+                if (dataA !== dataB) {
+                    return dataB.localeCompare(dataA);
+                }
+                return (b.item.criadoEm || 0) - (a.item.criadoEm || 0);
+            });
+    }
+
+    function alternarPago(idx) {
+        if (!db.reparos[idx]) return;
+        db.reparos[idx].pago = !db.reparos[idx].pago;
+        salvarDB();
+        render();
+    }
+
+    function excluirReparo(idx) {
+        const item = db.reparos[idx];
+        if (!item) return;
+        const alvo = `${item.cliente}${item.kite ? ` (${item.kite})` : ''}`;
+        if (!confirm(`Apagar a reparação de ${alvo}?`)) return;
+
+        if (edicaoIdx === idx) {
+            fecharForm();
+        }
+        db.reparos.splice(idx, 1);
+        salvarDB();
+        render();
+    }
+
+    function fecharMes() {
+        const pagos = db.reparos.filter(r => r.pago);
+        if (pagos.length === 0) {
+            alert('Nenhum reparo marcado como PAGO para dar baixa.');
+            return;
+        }
+        if (!confirm(`Mover ${pagos.length} reparo(s) pago(s) para o histórico mensal?`)) return;
+
+        const pendentes = db.reparos.filter(r => !r.pago);
+        db.hist_reparos.push(...pagos);
+        db.reparos = pendentes;
+        salvarDB();
+        render();
+    }
+
+    function render() {
+        let brutoTotal = 0;
+        let gastoTotal = 0;
+        let saldoLiquido = 0;
+
+        db.reparos.forEach(r => {
+            const b = Number(r.bruto || 0);
+            const g = Number(r.gasto || 0);
+            brutoTotal += b;
+            gastoTotal += g;
+            saldoLiquido += (b - g);
+        });
+
+        document.getElementById('val-saldo-topo').textContent = formatarMoeda(saldoLiquido);
+        document.getElementById('val-bruto-topo').textContent = `R$ ${brutoTotal.toFixed(2)}`;
+        document.getElementById('val-gasto-topo').textContent = `R$ ${gastoTotal.toFixed(2)}`;
+
+        const lista = document.getElementById('lista-cards');
+        if (db.reparos.length === 0) {
+            lista.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:13px; margin-top:24px;">Nenhum reparo registrado.</p>`;
+            lucide.createIcons();
+            return;
+        }
+
+        const ordenados = obterReparosOrdenados();
+
+        lista.innerHTML = ordenados.map(({ item: r, idxOriginal }) => {
+            const liquido = Number(r.bruto || 0) - Number(r.gasto || 0);
+            const resumoItens = Array.isArray(r.itens) && r.itens.length
+                ? r.itens.map(it => `${it.qtd}x ${it.nome}`).join(', ')
+                : 'Reparo avulso';
+
+            return `
+                <div class="card-registro">
+                    <div class="card-topo">
+                        <div>
+                            <div style="font-weight:800; font-size:14px;">${r.cliente}</div>
+                            <div style="font-size:12px; color:var(--text-muted);">${r.kite || 'Sem equipamento'} • ${formatarData(r.data)}</div>
+                            <div style="font-size:11px; color:#475569; margin-top:4px;">${resumoItens}</div>
+                            <span class="badge-status ${r.pago ? 'badge-pago' : 'badge-pendente'}">${r.pago ? 'PAGO' : 'PENDENTE'}</span>
+                        </div>
+                        <div style="text-align:right; flex-shrink:0;">
+                            <div style="font-weight:800; font-size:15px; color:var(--card-dark);">${formatarMoeda(r.bruto)}</div>
+                            <div style="font-size:11px; color:var(--text-muted);">Peças: ${formatarMoeda(r.gasto)}</div>
+                            <div style="font-size:11px; font-weight:700; color:var(--accent-green);">Líq: ${formatarMoeda(liquido)}</div>
+                        </div>
+                    </div>
+                    <div class="card-acoes">
+                        <button class="btn-acao-card btn-acao-pago" onclick="alternarPago(${idxOriginal})">
+                            <i data-lucide="check" size="14"></i> ${r.pago ? 'Pago' : 'Marcar Pago'}
+                        </button>
+                        <button class="btn-acao-card btn-acao-editar" onclick="abrirForm(${idxOriginal})">
+                            <i data-lucide="pencil" size="14"></i> Editar
+                        </button>
+                        <button class="btn-acao-card btn-acao-excluir" onclick="excluirReparo(${idxOriginal})">
+                            <i data-lucide="trash-2" size="14"></i> Apagar
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        lucide.createIcons();
+    }
+
+    function adicionarNovoTipoReparo() {
+        const nome = document.getElementById('cfg-nome').value.trim();
+        const preco = parseFloat(document.getElementById('cfg-preco').value);
+        if (!nome || isNaN(preco) || preco < 0) {
+            alert('Preencha nome e preço unitário válido.');
+            return;
+        }
+        db.tabelaPrecos.push({ nome, preco });
+        salvarDB();
+        document.getElementById('cfg-nome').value = '';
+        document.getElementById('cfg-preco').value = '';
+        renderTabelaPrecos();
+        carregarSelectReparos();
+    }
+
+    function removerTipoReparo(idx) {
+        db.tabelaPrecos.splice(idx, 1);
+        salvarDB();
+        renderTabelaPrecos();
+        carregarSelectReparos();
+    }
+
+    function renderTabelaPrecos() {
+        const cont = document.getElementById('lista-tabela-precos');
+        if (!db.tabelaPrecos.length) {
+            cont.innerHTML = `<p style="font-size:12px; color:var(--text-muted);">Nenhum tipo cadastrado.</p>`;
+            return;
+        }
+        cont.innerHTML = db.tabelaPrecos.map((item, idx) => `
+            <div class="item-tabela-preco">
+                <span><b>${item.nome}</b> — ${formatarMoeda(item.preco)}</span>
+                <button onclick="removerTipoReparo(${idx})" style="border:none; background:none; color:#ef4444; cursor:pointer;"><i data-lucide="trash-2" size="15"></i></button>
+            </div>
+        `).join('');
+        lucide.createIcons();
+    }
+
+    function renderHistoricoMensal() {
+        const cont = document.getElementById('conteudo-historico-meses');
+        const todosPagos = [
+            ...db.reparos.filter(r => r.pago),
+            ...db.hist_reparos
+        ];
+
+        if (todosPagos.length === 0) {
+            cont.innerHTML = `<p style="font-size:12px; color:var(--text-muted); text-align:center;">Nenhum ganho pago registrado ainda.</p>`;
+            return;
+        }
+
+        const grupos = {};
+        todosPagos.forEach(r => {
+            const chaveMes = obterNomeMesAno(r.data);
+            if (!grupos[chaveMes]) grupos[chaveMes] = { bruto: 0, gasto: 0, qtd: 0 };
+            grupos[chaveMes].bruto += Number(r.bruto || 0);
+            grupos[chaveMes].gasto += Number(r.gasto || 0);
+            grupos[chaveMes].qtd += 1;
+        });
+
+        cont.innerHTML = Object.entries(grupos).map(([mes, info]) => {
+            const liq = info.bruto - info.gasto;
+            return `
+                <div class="card-mes-historico">
+                    <div style="display:flex; justify-content:space-between; font-weight:800; font-size:13px; margin-bottom:4px;">
+                        <span>${mes}</span>
+                        <span style="color:var(--accent-green);">${formatarMoeda(liq)}</span>
+                    </div>
+                    <div style="font-size:11px; color:var(--text-muted);">
+                        ${info.qtd} serviço(s) • Bruto: ${formatarMoeda(info.bruto)} • Peças: ${formatarMoeda(info.gasto)}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function gerarRelatorio() {
+        const ordenados = obterReparosOrdenados();
+        const linhas = ordenados.map(({ item: r }, i) => {
+            const status = r.pago ? 'PAGO' : 'PENDENTE';
+            return `${i + 1}. ${r.cliente} (${r.kite || 'Equipamento'}) - ${formatarMoeda(r.bruto)} [${status}]`;
+        });
+        const texto = linhas.length
+            ? `RELATÓRIO DE REPAROS\n\n${linhas.join('\n')}`
+            : 'Nenhum reparo ativo no momento.';
+
+        document.getElementById('conteudo-comprovante').textContent = texto;
+        document.getElementById('btn-wpp').onclick = () => {
+            window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
+        };
+        document.getElementById('modal-comprovante').style.display = 'flex';
+        lucide.createIcons();
+    }
+
+    function exportarBackup() {
+        const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `backup_reparos_${new Date().toISOString().slice(0, 10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function importarBackup(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            try {
+                const parsed = JSON.parse(e.target.result);
+                const listaReparos = Array.isArray(parsed.reparos) ? parsed.reparos : [];
+                const total = listaReparos.length;
+                db = {
+                    reparos: listaReparos.map((r, i) => ({
+                        ...r,
+                        criadoEm: typeof r.criadoEm === 'number' ? r.criadoEm : (total - i)
+                    })),
+                    hist_reparos: Array.isArray(parsed.hist_reparos) ? parsed.hist_reparos : [],
+                    tabelaPrecos: Array.isArray(parsed.tabelaPrecos) ? parsed.tabelaPrecos : precosPadrao
+                };
+                salvarDB();
+                render();
+                fecharModal('modal-menu-opcoes');
+                alert('Backup restaurado com sucesso!');
+            } catch (err) {
+                alert('Arquivo de backup inválido.');
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    carregarSelectReparos();
+    render();
+    lucide.createIcons();
+</script>
+</body>
+</html>
 
